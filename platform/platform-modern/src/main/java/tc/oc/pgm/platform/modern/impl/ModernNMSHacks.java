@@ -31,6 +31,7 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -52,10 +53,7 @@ import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftFirework;
 import org.bukkit.craftbukkit.generator.CraftWorldInfo;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Fireball;
-import org.bukkit.entity.Firework;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.player.PlayerPickupArrowEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -392,5 +390,21 @@ public class ModernNMSHacks implements NMSHacks {
   @Override
   public int allocateEntityId() {
     return Bukkit.getUnsafe().nextEntityId();
+  }
+
+  @Override
+  public boolean isDisplayEntity(Entity entity) {
+      return entity instanceof Display;
+
+  }
+
+  @Override
+  public boolean isDisplayEntity(Class<? extends Entity> entity) {
+      return entity.isAssignableFrom(BlockDisplay.class) || entity.isAssignableFrom(TextDisplay.class) || entity.isAssignableFrom(ItemDisplay.class);
+  }
+
+  @Override
+  public void setBlockDisplayBlock(Entity entity, Material block) {
+    ((BlockDisplay) entity).setBlock(block.createBlockData());
   }
 }

@@ -228,4 +228,19 @@ public class SpNMSHacks implements NMSHacks {
   public int allocateEntityId() {
     return Bukkit.allocateEntityId();
   }
+
+  @Override
+  public boolean isDisplayEntity(Entity entity) {
+    return false;
+  }
+
+  @Override
+  public boolean isDisplayEntity(Class<? extends Entity> entity) {
+    return false;
+  }
+
+  @Override
+  public void setBlockDisplayBlock(Entity entity, Material block) {
+    throw new UnsupportedOperationException("Display entities are not supported on lower versions.");
+  }
 }
