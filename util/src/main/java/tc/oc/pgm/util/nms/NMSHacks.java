@@ -57,4 +57,10 @@ public interface NMSHacks {
   int getMaxWorldSize(World world);
 
   int allocateEntityId();
+
+  boolean isDisplayEntity(Entity entity);
+
+  boolean isDisplayEntity(Class<? extends Entity> entity);
+
+  void setBlockDisplayBlock(Entity entity, Material block);
 }
