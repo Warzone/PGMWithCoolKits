@@ -114,6 +114,9 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         if (projectileDefinition.power != null && projectile instanceof Explosive) {
           ((Explosive) projectile).setYield(projectileDefinition.power);
         }
+        if (NMSHacks.NMS_HACKS.isDisplayEntity(projectile)) {
+          NMSHacks.NMS_HACKS.setBlockDisplayBlock(projectile, projectileDefinition.blockMaterial.getItemType());
+        }
         projectile.setMetadata(
             "projectileDefinition", new FixedMetadataValue(PGM.get(), projectileDefinition));
       } finally {
