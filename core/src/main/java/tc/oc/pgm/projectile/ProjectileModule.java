@@ -65,8 +65,6 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
             Node.fromAttr(projectileElement, "click"), ClickAction.class, ClickAction.BOTH);
         Class<? extends Entity> entity =
             XMLUtils.parseEntityTypeAttribute(projectileElement, "projectile", Arrow.class);
-        System.out.println("WHAT TYPE IS THE DISPLAY ENTITY????? ==================");
-        System.out.println(entity.getSimpleName());
         BlockMaterialData blockMaterial = entity.isAssignableFrom(FallingBlock.class) || NMSHacks.NMS_HACKS.isDisplayEntity(entity)
             ? XMLUtils.parseBlockMaterialData(Node.fromAttr(projectileElement, "material"))
             : null;
