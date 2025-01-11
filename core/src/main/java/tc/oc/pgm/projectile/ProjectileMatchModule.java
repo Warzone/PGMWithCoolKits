@@ -50,6 +50,8 @@ import tc.oc.pgm.events.PlayerParticipationStopEvent;
 import tc.oc.pgm.filters.query.BlockQuery;
 import tc.oc.pgm.filters.query.PlayerBlockQuery;
 import tc.oc.pgm.kits.tag.ItemTags;
+import tc.oc.pgm.projectile.path.ProjectilePath;
+import tc.oc.pgm.projectile.path.SinusoidalProjectilePath;
 import tc.oc.pgm.util.bukkit.MetadataUtils;
 import tc.oc.pgm.util.inventory.InventoryUtils;
 import tc.oc.pgm.util.nms.NMSHacks;
@@ -123,9 +125,20 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         if (NMSHacks.NMS_HACKS.isDisplayEntity(projectile)) {
           NMSHacks.NMS_HACKS.setBlockDisplayBlock(projectile, projectileDefinition.blockMaterial.getItemType());
           final Vector normalizedDirection = player.getLocation().getDirection().normalize();
+          final SinusoidalProjectilePath sinusoidalProjectilePath = new SinusoidalProjectilePath(
+            normalizedDirection, 4, 1
+          );
           runFixedTimesAtPeriod(
               match.getExecutor(MatchScope.RUNNING),
-              () -> this.moveEntity(projectile, normalizedDirection, 0.2D),
+              new BooleanSupplier() {
+                private int progress = 0;
+
+                @Override
+                public boolean getAsBoolean() {
+                  projectile.teleport(calculateTo(projectile, sinusoidalProjectilePath, ++progress));
+                  return false;
+                }
+              },
               1L, 80, () -> { projectile.remove(); }
           );
         }
@@ -158,11 +171,11 @@ public class ProjectileMatchModule implements MatchModule, Listener {
   }
 
   // For entities which need their velocity simulated
-  private boolean moveEntity(final Entity entity, final Vector direction, final double magnitude) {
-    final Vector delta = direction.clone().multiply(magnitude);
-    final Location to = entity.getLocation().clone().add(delta);
-    entity.teleport(to);
-    return false;
+  private Location calculateTo(
+          final Entity entity,
+          final ProjectilePath path,
+          final int progress) {
+    return entity.getLocation().clone().add(path.getPositionAtProgress(progress));
   }
 
   private static void runFixedTimesAtPeriod(
@@ -170,6 +183,8 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         final long periodTicks, final int iterations,
         final Runnable finishHandler
   ) {
+    // effectively final capture
+    // https://docs.oracle.com/javase/specs/jls/se16/html/jls-15.html#jls-15.27.2
     final ScheduledFuture<?>[] ref = new ScheduledFuture[2];
     final ScheduledFuture<?> mainTask = scheduledExecutorService.scheduleAtFixedRate(
         () -> {
