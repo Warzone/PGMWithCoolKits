@@ -236,6 +236,16 @@ public class SpNMSHacks implements NMSHacks {
   }
 
   @Override
+  public void setInterpolationDurationDisplayEntity(Entity entity, int duration) {
+
+  }
+
+  @Override
+  public void setInterpolationDelayDisplayEntity(Entity entity, int delay) {
+
+  }
+
+  @Override
   public boolean isDisplayEntity(Class<? extends Entity> entity) {
     return false;
   }
