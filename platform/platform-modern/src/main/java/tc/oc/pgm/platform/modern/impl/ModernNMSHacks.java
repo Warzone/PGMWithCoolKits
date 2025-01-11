@@ -404,6 +404,16 @@ public class ModernNMSHacks implements NMSHacks {
   }
 
   @Override
+  public void setInterpolationDurationDisplayEntity(Entity entity, int duration) {
+    ((BlockDisplay) entity).setInterpolationDuration(duration);
+  }
+
+  @Override
+  public void setInterpolationDelayDisplayEntity(Entity entity, int delay) {
+    ((BlockDisplay) entity).setInterpolationDelay(delay);
+  }
+
+  @Override
   public void setBlockDisplayBlock(Entity entity, Material block) {
     ((BlockDisplay) entity).setBlock(block.createBlockData());
   }
