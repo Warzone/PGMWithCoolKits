@@ -124,8 +124,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         }
         if (NMSHacks.NMS_HACKS.isDisplayEntity(projectile)) {
           NMSHacks.NMS_HACKS.setBlockDisplayBlock(projectile, projectileDefinition.blockMaterial.getItemType());
-//          NMSHacks.NMS_HACKS.setInterpolationDelayDisplayEntity(projectile, 0);
-//          NMSHacks.NMS_HACKS.setInterpolationDurationDisplayEntity(projectile, 1);
+
           final Vector normalizedDirection = player.getLocation().getDirection().normalize();
           final SinusoidalProjectilePath sinusoidalProjectilePath = new SinusoidalProjectilePath(
             normalizedDirection, 0.1, 0.5
@@ -138,10 +137,12 @@ public class ProjectileMatchModule implements MatchModule, Listener {
                 @Override
                 public boolean getAsBoolean() {
                   projectile.teleport(calculateTo(projectile, sinusoidalProjectilePath, ++progress));
+                  NMSHacks.NMS_HACKS.setInterpolationDelayDisplayEntity(projectile, 0);
+                  NMSHacks.NMS_HACKS.setInterpolationDurationDisplayEntity(projectile, 1);
                   return false;
                 }
               },
-              1L, 4000, () -> { projectile.remove(); }
+              1L, 4000, projectile::remove
           );
         }
         projectile.setMetadata(
