@@ -58,8 +58,9 @@ import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
-import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import tc.oc.pgm.platform.modern.PgmBootstrap;
 import tc.oc.pgm.platform.modern.material.ModernBlockMaterialData;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
@@ -414,7 +415,11 @@ public class ModernNMSHacks implements NMSHacks {
   }
 
   @Override
-  public void setDisplayEntityRotation(Entity entity, double pitch, double yaw) {
-    ((BlockDisplay) entity).setTransformationMatrix(new Matrix4f().rotateXYZ((float)pitch, 0, (float)yaw));
+  public void centerBlockDisplayTransformationMatrix(Entity entity, float pitch, float yaw) {
+    Transformation transformation = ((BlockDisplay) entity).getTransformation();
+    transformation.getTranslation().set(new Vector3f(-0.5F, -0.5F, -0.5F));
+    transformation.getLeftRotation().set(1, 0, 0, pitch);
+    transformation.getRightRotation().set(0, 0, 1, yaw);
+    ((BlockDisplay) entity).setTransformation(transformation);
   }
 }
