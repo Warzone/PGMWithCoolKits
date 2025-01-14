@@ -252,7 +252,7 @@ public class SpNMSHacks implements NMSHacks {
   }
 
   @Override
-  public void setDisplayEntityRotation(Entity entity, double pitch, double yaw) {
+  public void centerBlockDisplayTransformationMatrix(Entity entity, float pitch, float yaw) {
     throw new UnsupportedOperationException("Display entities are not supported on lower versions.");
   }
 }
