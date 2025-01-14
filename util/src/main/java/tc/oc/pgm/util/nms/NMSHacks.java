@@ -68,5 +68,5 @@ public interface NMSHacks {
 
   void setBlockDisplayBlock(Entity entity, Material block);
 
-  void setDisplayEntityRotation(Entity entity, double pitch, double yaw);
+  void centerBlockDisplayTransformationMatrix(Entity entity, float pitch, float yaw);
 }

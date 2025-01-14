@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -34,9 +33,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.xml.sax.Locator;
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.api.event.BlockTransformEvent;
 import tc.oc.pgm.api.filter.Filter;
@@ -119,6 +116,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
             if (NMSHacks.NMS_HACKS.isDisplayEntity(projectileDefinition.projectile)) {
               loc.setPitch(0);
               loc.setYaw(0);
+              loc.set(loc.getX() - 0.5, loc.getY(), loc.getZ() - 0.5);
             }
             projectile =
                 player.getWorld().spawn(loc, projectileDefinition.projectile);
@@ -130,6 +128,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         }
         if (NMSHacks.NMS_HACKS.isDisplayEntity(projectile)) {
           Location loc = player.getEyeLocation();
+          NMSHacks.NMS_HACKS.centerBlockDisplayTransformationMatrix(projectile, loc.getPitch(), loc.getYaw());
 //          projectile.teleport(new Location(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), player.getEyeLocation().getYaw(), player.getEyeLocation().getPitch()));
 //          projectile.teleport(new Location(loc.getWorld(), loc.getX() - 0.5, loc.getY(), loc.getZ() - 0.5, projectile.getLocation().getYaw(), projectile.getLocation().getPitch()));
 //          NMSHacks.NMS_HACKS.setDisplayEntityRotation(projectile, player.getEyeLocation().getPitch(), player.getLocation().getYaw());
