@@ -18,11 +18,7 @@ import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.ServerNBTManager;
 import net.minecraft.server.v1_8_R3.WorldData;
 import net.minecraft.server.v1_8_R3.WorldServer;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
@@ -252,6 +248,11 @@ public class SpNMSHacks implements NMSHacks {
 
   @Override
   public void setBlockDisplayBlock(Entity entity, Material block) {
+    throw new UnsupportedOperationException("Display entities are not supported on lower versions.");
+  }
+
+  @Override
+  public void setDisplayEntityRotation(Entity entity, double pitch, double yaw) {
     throw new UnsupportedOperationException("Display entities are not supported on lower versions.");
   }
 }
