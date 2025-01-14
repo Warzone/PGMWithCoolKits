@@ -67,4 +67,6 @@ public interface NMSHacks {
   boolean isDisplayEntity(Class<? extends Entity> entity);
 
   void setBlockDisplayBlock(Entity entity, Material block);
+
+  void setDisplayEntityRotation(Entity entity, double pitch, double yaw);
 }

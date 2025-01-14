@@ -31,7 +31,6 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.biome.BiomeManager;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -39,12 +38,7 @@ import net.minecraft.world.level.storage.LevelDataAndDimensions;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import net.minecraft.world.level.validation.ContentValidationException;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Material;
-import org.bukkit.Nameable;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftChunk;
 import org.bukkit.craftbukkit.CraftServer;
@@ -65,6 +59,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
+import org.joml.Matrix4f;
 import tc.oc.pgm.platform.modern.PgmBootstrap;
 import tc.oc.pgm.platform.modern.material.ModernBlockMaterialData;
 import tc.oc.pgm.util.bukkit.BukkitUtils;
@@ -416,5 +411,10 @@ public class ModernNMSHacks implements NMSHacks {
   @Override
   public void setBlockDisplayBlock(Entity entity, Material block) {
     ((BlockDisplay) entity).setBlock(block.createBlockData());
+  }
+
+  @Override
+  public void setDisplayEntityRotation(Entity entity, double pitch, double yaw) {
+    ((BlockDisplay) entity).setTransformationMatrix(new Matrix4f().rotateXYZ((float)pitch, 0, (float)yaw));
   }
 }
