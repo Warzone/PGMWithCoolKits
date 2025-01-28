@@ -48,8 +48,8 @@ import tc.oc.pgm.events.PlayerParticipationStopEvent;
 import tc.oc.pgm.filters.query.BlockQuery;
 import tc.oc.pgm.filters.query.PlayerBlockQuery;
 import tc.oc.pgm.kits.tag.ItemTags;
+import tc.oc.pgm.projectile.path.LinearProjectilePath;
 import tc.oc.pgm.projectile.path.ProjectilePath;
-import tc.oc.pgm.projectile.path.SinusoidalProjectilePath;
 import tc.oc.pgm.util.bukkit.MetadataUtils;
 import tc.oc.pgm.util.inventory.InventoryUtils;
 import tc.oc.pgm.util.nms.NMSHacks;
@@ -116,7 +116,6 @@ public class ProjectileMatchModule implements MatchModule, Listener {
             if (NMSHacks.NMS_HACKS.isDisplayEntity(projectileDefinition.projectile)) {
               loc.setPitch(0);
               loc.setYaw(0);
-              loc.set(loc.getX() - 0.5, loc.getY(), loc.getZ() - 0.5);
             }
             projectile =
                 player.getWorld().spawn(loc, projectileDefinition.projectile);
@@ -128,17 +127,20 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         }
         if (NMSHacks.NMS_HACKS.isDisplayEntity(projectile)) {
           Location loc = player.getEyeLocation();
-          NMSHacks.NMS_HACKS.centerBlockDisplayTransformationMatrix(projectile, loc.getPitch(), loc.getYaw());
-//          projectile.teleport(new Location(loc.getWorld(), loc.getX(), loc.getY(), loc.getZ(), player.getEyeLocation().getYaw(), player.getEyeLocation().getPitch()));
-//          projectile.teleport(new Location(loc.getWorld(), loc.getX() - 0.5, loc.getY(), loc.getZ() - 0.5, projectile.getLocation().getYaw(), projectile.getLocation().getPitch()));
-//          NMSHacks.NMS_HACKS.setDisplayEntityRotation(projectile, player.getEyeLocation().getPitch(), player.getLocation().getYaw());
+          NMSHacks.NMS_HACKS.alignBlockDisplayToPlayerFacing(
+              projectile,
+              loc.getPitch(),
+              loc.getYaw()
+          );
+
           NMSHacks.NMS_HACKS.setBlockDisplayBlock(projectile, projectileDefinition.blockMaterial.getItemType());
 
-
-          Vector center = projectile.getLocation().toVector().add(new Vector(-0.5, 0.5, -0.5));
           final Vector normalizedDirection = player.getLocation().getDirection().normalize();
-          final SinusoidalProjectilePath sinusoidalProjectilePath = new SinusoidalProjectilePath(
-            normalizedDirection, 0.1, 0.5
+//          final SinusoidalProjectilePath sinusoidalProjectilePath = new SinusoidalProjectilePath(
+//            normalizedDirection, 0.1, 0.5
+//          );
+          final LinearProjectilePath linearProjectilePath = new LinearProjectilePath(
+            normalizedDirection, 0.10
           );
           runFixedTimesAtPeriod(
               match.getExecutor(MatchScope.RUNNING),
@@ -147,9 +149,10 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 
                 @Override
                 public boolean getAsBoolean() {
-//                  NMSHacks.NMS_HACKS.setInterpolationDelayDisplayEntity(projectile, 0);
-//                  NMSHacks.NMS_HACKS.setInterpolationDurationDisplayEntity(projectile, 1);
-//                  projectile.teleport(calculateTo(projectile, sinusoidalProjectilePath, ++progress));
+//                    NMSHacks.NMS_HACKS.setInterpolationDelayDisplayEntity(projectile, 0);
+//                    NMSHacks.NMS_HACKS.setInterpolationDurationDisplayEntity(projectile, 1);
+                  NMSHacks.NMS_HACKS.setTeleportationDuration(projectile, 1);
+                  projectile.teleport(calculateTo(projectile, linearProjectilePath, ++progress));
                   return false;
                 }
               },
