@@ -1,7 +1,5 @@
 package tc.oc.pgm.util.nms;
 
-import java.util.List;
-import java.util.UUID;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -18,6 +16,9 @@ import org.bukkit.util.Vector;
 import tc.oc.pgm.util.material.BlockMaterialData;
 import tc.oc.pgm.util.platform.Platform;
 import tc.oc.pgm.util.skin.Skin;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface NMSHacks {
   NMSHacks NMS_HACKS = Platform.get(NMSHacks.class);
@@ -64,9 +65,11 @@ public interface NMSHacks {
 
   void setInterpolationDelayDisplayEntity(Entity entity, int delay);
 
+  void setTeleportationDuration(Entity entity, int duration);
+
   boolean isDisplayEntity(Class<? extends Entity> entity);
 
   void setBlockDisplayBlock(Entity entity, Material block);
 
-  void centerBlockDisplayTransformationMatrix(Entity entity, float pitch, float yaw);
+  void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw);
 }

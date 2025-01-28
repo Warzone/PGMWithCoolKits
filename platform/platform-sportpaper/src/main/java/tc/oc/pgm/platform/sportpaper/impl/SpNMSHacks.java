@@ -241,6 +241,11 @@ public class SpNMSHacks implements NMSHacks {
   }
 
   @Override
+  public void setTeleportationDuration(Entity entity, int duration) {
+
+  }
+
+  @Override
   public boolean isDisplayEntity(Class<? extends Entity> entity) {
     return false;
   }
@@ -251,7 +256,7 @@ public class SpNMSHacks implements NMSHacks {
   }
 
   @Override
-  public void centerBlockDisplayTransformationMatrix(Entity entity, float pitch, float yaw) {
+  public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw) {
     throw new UnsupportedOperationException("Display entities are not supported on lower versions.");
   }
 }

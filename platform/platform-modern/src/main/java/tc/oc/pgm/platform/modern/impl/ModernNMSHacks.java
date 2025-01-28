@@ -1,19 +1,9 @@
 package tc.oc.pgm.platform.modern.impl;
 
-import static tc.oc.pgm.util.nms.Packets.ENTITIES;
-import static tc.oc.pgm.util.platform.Supports.Variant.PAPER;
-
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -58,8 +48,9 @@ import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.util.Transformation;
 import org.bukkit.util.Vector;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import tc.oc.pgm.platform.modern.PgmBootstrap;
 import tc.oc.pgm.platform.modern.material.ModernBlockMaterialData;
@@ -69,6 +60,17 @@ import tc.oc.pgm.util.material.BlockMaterialData;
 import tc.oc.pgm.util.nms.NMSHacks;
 import tc.oc.pgm.util.platform.Supports;
 import tc.oc.pgm.util.skin.Skin;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.logging.Level;
+
+import static tc.oc.pgm.util.nms.Packets.ENTITIES;
+import static tc.oc.pgm.util.platform.Supports.Variant.PAPER;
 
 @Supports(value = PAPER, minVersion = "1.20.6")
 public class ModernNMSHacks implements NMSHacks {
@@ -410,16 +412,36 @@ public class ModernNMSHacks implements NMSHacks {
   }
 
   @Override
+  public void setTeleportationDuration(Entity entity, int duration) {
+    ((BlockDisplay) entity).setTeleportDuration(duration);
+  }
+
+  @Override
   public void setBlockDisplayBlock(Entity entity, Material block) {
     ((BlockDisplay) entity).setBlock(block.createBlockData());
   }
 
   @Override
-  public void centerBlockDisplayTransformationMatrix(Entity entity, float pitch, float yaw) {
-    Transformation transformation = ((BlockDisplay) entity).getTransformation();
-    transformation.getTranslation().set(new Vector3f(-0.5F, -0.5F, -0.5F));
-    transformation.getLeftRotation().set(1, 0, 0, pitch);
-    transformation.getRightRotation().set(0, 0, 1, yaw);
-    ((BlockDisplay) entity).setTransformation(transformation);
+  public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw) {
+    final Matrix4f translation = new Matrix4f().translate(
+        new Vector3f(
+            -0.5f,
+            -0.5f,
+            -0.5f
+        ));
+
+    final Matrix4f rotationMatrix = new Matrix4f();
+    final Quaternionf rotation = new Quaternionf();
+    rotation.rotateLocalX((float) Math.toRadians(-1 * pitch));
+    rotation.rotateLocalY((float) Math.toRadians(180 - yaw));
+    rotation.get(rotationMatrix);
+
+    final Matrix4f scale = new Matrix4f().identity();
+
+    // final Matrix4f transformationMatrix = translation.mul(rotationMatrix.mul(scale));
+    final Matrix4f transformationMatrix = rotationMatrix.mul(translation.mul(scale));
+    ((BlockDisplay) entity).setTransformationMatrix(
+        transformationMatrix
+    );
   }
 }
