@@ -163,10 +163,16 @@ public class ScoreMatchModule implements MatchModule, Listener {
     // add +1 to killer's team if it was a kill, otherwise -1 to victim's team
     if (event.isChallengeKill()) {
       this.incrementScore(
-          event.getKiller().getId(), event.getKiller().getParty(), this.config.killScore());
+          event.getKiller().getId(),
+          event.getKiller().getParty(),
+          this.config.killScore(),
+          ScoreCause.KILL);
     } else {
       this.incrementScore(
-          event.getVictim().getId(), event.getVictim().getCompetitor(), -this.config.deathScore());
+          event.getVictim().getId(),
+          event.getVictim().getCompetitor(),
+          -this.config.deathScore(),
+          ScoreCause.DEATH);
     }
   }
 
@@ -261,7 +267,7 @@ public class ScoreMatchModule implements MatchModule, Listener {
 
     if (points == 0) return;
 
-    this.incrementScore(player.getId(), player.getCompetitor(), points);
+    this.incrementScore(player.getId(), player.getCompetitor(), points, ScoreCause.SCOREBOX);
     box.setLastScoreTime(player, Instant.now());
 
     int wholePoints = (int) points;
@@ -277,15 +283,15 @@ public class ScoreMatchModule implements MatchModule, Listener {
     player.playSound(Sounds.SCORE);
   }
 
-  public void incrementScore(UUID player, Competitor competitor, double amount) {
+  public void incrementScore(UUID player, Competitor competitor, double amount, ScoreCause cause) {
     double contribution = contributions.get(player) + amount;
     contributions.put(player, contribution);
-    incrementScore(competitor, amount);
+    incrementScore(competitor, amount, cause);
 
     MatchPlayer mp = match.getPlayer(player);
     if (mp == null) return;
 
-    match.callEvent(new MatchPlayerScoreEvent(mp, amount));
+    match.callEvent(new MatchPlayerScoreEvent(mp, amount, cause));
 
     if (contribution <= PGM.get().getConfiguration().getGriefScore()) {
       // wait until the next tick to do this so stat recording and other stuff works
@@ -298,24 +304,24 @@ public class ScoreMatchModule implements MatchModule, Listener {
     }
   }
 
-  public void setScore(@NotNull Competitor competitor, double value) {
+  public void setScore(@NotNull Competitor competitor, double value, ScoreCause cause) {
     double curr = getScore(competitor);
-    if (curr != value) setScore(competitor, curr, value);
+    if (curr != value) setScore(competitor, curr, value, cause);
   }
 
-  public void incrementScore(Competitor competitor, double amount) {
+  public void incrementScore(Competitor competitor, double amount, ScoreCause cause) {
     double oldScore = this.scores.get(competitor);
     double newScore = oldScore + amount;
-    setScore(competitor, oldScore, newScore);
+    setScore(competitor, oldScore, newScore, cause);
   }
 
-  private void setScore(Competitor competitor, double oldScore, double newScore) {
+  private void setScore(Competitor competitor, double oldScore, double newScore, ScoreCause cause) {
     if (this.config.scoreLimit() > 0 && newScore > this.config.scoreLimit()) {
       newScore = this.config.scoreLimit();
     }
 
     CompetitorScoreChangeEvent event =
-        new CompetitorScoreChangeEvent(competitor, oldScore, newScore);
+        new CompetitorScoreChangeEvent(competitor, oldScore, newScore, cause);
     this.match.callEvent(event);
 
     this.scores.put(competitor, event.getNewScore());

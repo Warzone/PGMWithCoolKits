@@ -25,6 +25,7 @@ import tc.oc.pgm.goals.IncrementalGoal;
 import tc.oc.pgm.goals.SimpleGoal;
 import tc.oc.pgm.goals.events.GoalCompleteEvent;
 import tc.oc.pgm.goals.events.GoalStatusChangeEvent;
+import tc.oc.pgm.score.ScoreCause;
 import tc.oc.pgm.score.ScoreMatchModule;
 import tc.oc.pgm.teams.Team;
 import tc.oc.pgm.teams.TeamMatchModule;
@@ -275,7 +276,9 @@ public class ControlPoint extends SimpleGoal<ControlPointDefinition>
         float growth = this.getDefinition().getPointsGrowth();
         float rate = (float) (initial * Math.pow(2, seconds / growth));
         scoreMatchModule.incrementScore(
-            this.getControllingTeam(), rate * duration.toMillis() / 1000);
+            this.getControllingTeam(),
+            rate * duration.toMillis() / 1000,
+            ScoreCause.CONTROL_POINT_TICK);
       }
     }
   }
@@ -373,10 +376,15 @@ public class ControlPoint extends SimpleGoal<ControlPointDefinition>
       if (scoreMatchModule != null) {
         if (oldControllingTeam != null) {
           scoreMatchModule.incrementScore(
-              oldControllingTeam, getDefinition().getPointsOwner() * -1);
+              oldControllingTeam,
+              getDefinition().getPointsOwner() * -1,
+              ScoreCause.CONTROL_POINT_OWNED);
         }
         if (this.controllingTeam != null) {
-          scoreMatchModule.incrementScore(this.controllingTeam, getDefinition().getPointsOwner());
+          scoreMatchModule.incrementScore(
+              this.controllingTeam,
+              getDefinition().getPointsOwner(),
+              ScoreCause.CONTROL_POINT_LOST);
         }
       }
       if (this.controllingTeam == null) {
