@@ -4,6 +4,7 @@ import static tc.oc.pgm.util.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.BooleanSupplier;
@@ -140,7 +141,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 //            normalizedDirection, 0.1, 0.5
 //          );
           final LinearProjectilePath linearProjectilePath = new LinearProjectilePath(
-            normalizedDirection, 0.10
+            normalizedDirection, 0.20
           );
           runFixedTimesAtPeriod(
               match.getExecutor(MatchScope.RUNNING),
@@ -149,10 +150,20 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 
                 @Override
                 public boolean getAsBoolean() {
-//                    NMSHacks.NMS_HACKS.setInterpolationDelayDisplayEntity(projectile, 0);
-//                    NMSHacks.NMS_HACKS.setInterpolationDurationDisplayEntity(projectile, 1);
                   NMSHacks.NMS_HACKS.setTeleportationDuration(projectile, 1);
                   projectile.teleport(calculateTo(projectile, linearProjectilePath, ++progress));
+                  List<Entity> nearbyEntities = projectile.getNearbyEntities(0.5, 0.5, 0.5);
+                  if (!nearbyEntities.isEmpty()) {
+                    for (Entity entity : nearbyEntities) {
+                      if (entity instanceof Player) {
+                        if (PGM.get().getMatchManager().getPlayer(player).getParty() != PGM.get().getMatchManager().getPlayer(((Player) entity)).getParty()) {
+                          double newHealth = (((Player) entity).getHealth() - 4) < 0 ? 0 : ((Player) entity).getHealth() - 4;
+                          ((Player) entity).setHealth(newHealth);
+                          return true;
+                        }
+                      }
+                    }
+                  }
                   return false;
                 }
               },
