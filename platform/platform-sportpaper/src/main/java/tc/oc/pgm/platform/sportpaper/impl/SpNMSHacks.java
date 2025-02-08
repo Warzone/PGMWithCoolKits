@@ -256,7 +256,7 @@ public class SpNMSHacks implements NMSHacks {
   }
 
   @Override
-  public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw) {
+  public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw, float scale) {
     throw new UnsupportedOperationException("Display entities are not supported on lower versions.");
   }
 }

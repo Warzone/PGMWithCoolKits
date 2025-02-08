@@ -422,12 +422,12 @@ public class ModernNMSHacks implements NMSHacks {
   }
 
   @Override
-  public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw) {
+  public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw, float scale) {
     final Matrix4f translation = new Matrix4f().translate(
         new Vector3f(
-            -0.5f,
-            -0.5f,
-            -0.5f
+            -0.5f * scale,
+            -0.5f * scale,
+            -0.5f * scale
         ));
 
     final Matrix4f rotationMatrix = new Matrix4f();
@@ -436,10 +436,10 @@ public class ModernNMSHacks implements NMSHacks {
     rotation.rotateLocalY((float) Math.toRadians(180 - yaw));
     rotation.get(rotationMatrix);
 
-    final Matrix4f scale = new Matrix4f().identity();
+    final Matrix4f scaleMatrix = new Matrix4f().scale(scale);
 
     // final Matrix4f transformationMatrix = translation.mul(rotationMatrix.mul(scale));
-    final Matrix4f transformationMatrix = rotationMatrix.mul(translation.mul(scale));
+    final Matrix4f transformationMatrix = rotationMatrix.mul(translation.mul(scaleMatrix));
     ((BlockDisplay) entity).setTransformationMatrix(
         transformationMatrix
     );
