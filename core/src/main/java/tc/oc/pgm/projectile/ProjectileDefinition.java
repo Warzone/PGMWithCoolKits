@@ -22,6 +22,7 @@ public class ProjectileDefinition extends SelfIdentifyingFeatureDefinition {
   protected boolean throwable;
   protected boolean precise;
   protected BlockMaterialData blockMaterial;
+  protected float scale;
 
   public ProjectileDefinition(
       @Nullable String id,
@@ -36,7 +37,8 @@ public class ProjectileDefinition extends SelfIdentifyingFeatureDefinition {
       Duration coolDown,
       boolean throwable,
       boolean precise,
-      BlockMaterialData blockMaterial) {
+      BlockMaterialData blockMaterial,
+      float scale) {
     super(id);
     this.name = name;
     this.damage = damage;
@@ -50,6 +52,7 @@ public class ProjectileDefinition extends SelfIdentifyingFeatureDefinition {
     this.throwable = throwable;
     this.precise = precise;
     this.blockMaterial = blockMaterial;
+    this.scale = scale;
   }
 
   public @Nullable String getName() {

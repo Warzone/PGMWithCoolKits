@@ -77,6 +77,7 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
         boolean throwable =
             XMLUtils.parseBoolean(projectileElement.getAttribute("throwable"), true);
         boolean precise = XMLUtils.parseBoolean(projectileElement.getAttribute("precise"), true);
+        float scale = XMLUtils.parseNumber(Node.fromChildOrAttr(projectileElement, "scale"), Float.class, 1.0f);
 
         ProjectileDefinition projectileDefinition = new ProjectileDefinition(
             id,
@@ -91,7 +92,8 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
             coolDown,
             throwable,
             precise,
-            blockMaterial);
+            blockMaterial,
+            scale);
 
         factory.getFeatures().addFeature(projectileElement, projectileDefinition);
         projectiles.add(projectileDefinition);
