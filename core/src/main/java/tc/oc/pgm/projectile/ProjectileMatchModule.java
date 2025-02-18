@@ -142,7 +142,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 //            normalizedDirection, 0.1, 0.5
 //          );
           final LinearProjectilePath linearProjectilePath = new LinearProjectilePath(
-            normalizedDirection, 0.20
+            normalizedDirection, projectileDefinition.velocity
           );
           runFixedTimesAtPeriod(
               match.getExecutor(MatchScope.RUNNING),
@@ -153,22 +153,24 @@ public class ProjectileMatchModule implements MatchModule, Listener {
                 public boolean getAsBoolean() {
                   NMSHacks.NMS_HACKS.setTeleportationDuration(projectile, 1);
                   projectile.teleport(calculateTo(projectile, linearProjectilePath, ++progress));
-                  long startTime = System.currentTimeMillis();
+//                  long startTime = System.currentTimeMillis();
                   List<Entity> nearbyEntities = projectile.getNearbyEntities(0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale);
 
-                  if (!nearbyEntities.isEmpty()) {
-                    for (Entity entity : nearbyEntities) {
-                      if (entity instanceof Player) {
-                        if (PGM.get().getMatchManager().getPlayer(player).getParty() != PGM.get().getMatchManager().getPlayer(((Player) entity)).getParty()) {
-                          double newHealth = (((Player) entity).getHealth() - 4) < 0 ? 0 : ((Player) entity).getHealth() - 4;
-                          ((Player) entity).setHealth(newHealth);
-                          return true;
+                  if (projectileDefinition.damage != null) {
+                    if (!nearbyEntities.isEmpty()) {
+                      for (Entity entity : nearbyEntities) {
+                        if (entity instanceof Player) {
+                          if (PGM.get().getMatchManager().getPlayer(player).getParty() != PGM.get().getMatchManager().getPlayer(((Player) entity)).getParty()) {
+                            double newHealth = (((Player) entity).getHealth() - projectileDefinition.damage) < 0 ? 0 : ((Player) entity).getHealth() - 4;
+                            ((Player) entity).setHealth(newHealth);
+                            return true;
+                          }
                         }
                       }
                     }
                   }
-                  long endTime = System.currentTimeMillis();
-                  System.out.println("total time:" + (endTime - startTime));
+//                  long endTime = System.currentTimeMillis();
+//                  System.out.println("total time:" + (endTime - startTime));
                   return false;
                 }
               },
