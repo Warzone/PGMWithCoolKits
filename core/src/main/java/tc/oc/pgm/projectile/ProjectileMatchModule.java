@@ -42,6 +42,7 @@ import tc.oc.pgm.api.filter.query.Query;
 import tc.oc.pgm.api.match.Match;
 import tc.oc.pgm.api.match.MatchModule;
 import tc.oc.pgm.api.match.MatchScope;
+import tc.oc.pgm.api.party.Party;
 import tc.oc.pgm.api.player.MatchPlayer;
 import tc.oc.pgm.api.player.ParticipantState;
 import tc.oc.pgm.events.ListenerScope;
@@ -114,7 +115,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
                 projectileDefinition.blockMaterial.spawnFallingBlock(player.getEyeLocation());
           } else {
             Location loc = player.getEyeLocation();
-            if (NMSHacks.NMS_HACKS.isDisplayEntity(projectileDefinition.projectile)) {
+            if (NMSHacks.NMS_HACKS.isBlockDisplayEntity(projectileDefinition.projectile)) {
               loc.setPitch(0);
               loc.setYaw(0);
             }
@@ -126,7 +127,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         if (projectileDefinition.power != null && projectile instanceof Explosive) {
           ((Explosive) projectile).setYield(projectileDefinition.power);
         }
-        if (NMSHacks.NMS_HACKS.isDisplayEntity(projectile)) {
+        if (NMSHacks.NMS_HACKS.isBlockDisplayEntity(projectile)) {
           Location loc = player.getEyeLocation();
           NMSHacks.NMS_HACKS.alignBlockDisplayToPlayerFacing(
               projectile,
@@ -138,9 +139,6 @@ public class ProjectileMatchModule implements MatchModule, Listener {
           NMSHacks.NMS_HACKS.setBlockDisplayBlock(projectile, projectileDefinition.blockMaterial.getItemType());
 
           final Vector normalizedDirection = player.getLocation().getDirection().normalize();
-//          final SinusoidalProjectilePath sinusoidalProjectilePath = new SinusoidalProjectilePath(
-//            normalizedDirection, 0.1, 0.5
-//          );
           final LinearProjectilePath linearProjectilePath = new LinearProjectilePath(
             normalizedDirection, projectileDefinition.velocity
           );
@@ -153,24 +151,21 @@ public class ProjectileMatchModule implements MatchModule, Listener {
                 public boolean getAsBoolean() {
                   NMSHacks.NMS_HACKS.setTeleportationDuration(projectile, 1);
                   projectile.teleport(calculateTo(projectile, linearProjectilePath, ++progress));
-//                  long startTime = System.currentTimeMillis();
-                  List<Entity> nearbyEntities = projectile.getNearbyEntities(0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale);
 
                   if (projectileDefinition.damage != null) {
+                    List<Entity> nearbyEntities = projectile.getNearbyEntities(0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale);
                     if (!nearbyEntities.isEmpty()) {
+                      Party playerParty = PGM.get().getMatchManager().getPlayer(player).getParty();
                       for (Entity entity : nearbyEntities) {
                         if (entity instanceof Player) {
-                          if (PGM.get().getMatchManager().getPlayer(player).getParty() != PGM.get().getMatchManager().getPlayer(((Player) entity)).getParty()) {
-                            double newHealth = (((Player) entity).getHealth() - projectileDefinition.damage) < 0 ? 0 : ((Player) entity).getHealth() - 4;
-                            ((Player) entity).setHealth(newHealth);
+                          if (playerParty != PGM.get().getMatchManager().getPlayer(((Player) entity)).getParty()) {
+                            ((Player) entity).damage(projectileDefinition.damage, player);
                             return true;
                           }
                         }
                       }
                     }
                   }
-//                  long endTime = System.currentTimeMillis();
-//                  System.out.println("total time:" + (endTime - startTime));
                   return false;
                 }
               },

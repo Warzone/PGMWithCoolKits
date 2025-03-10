@@ -59,15 +59,11 @@ public interface NMSHacks {
 
   int allocateEntityId();
 
-  boolean isDisplayEntity(Entity entity);
+  boolean isBlockDisplayEntity(Entity entity);
 
-  void setInterpolationDurationDisplayEntity(Entity entity, int duration);
-
-  void setInterpolationDelayDisplayEntity(Entity entity, int delay);
+  boolean isBlockDisplayEntity(Class<? extends Entity> entity);
 
   void setTeleportationDuration(Entity entity, int duration);
-
-  boolean isDisplayEntity(Class<? extends Entity> entity);
 
   void setBlockDisplayBlock(Entity entity, Material block);
 

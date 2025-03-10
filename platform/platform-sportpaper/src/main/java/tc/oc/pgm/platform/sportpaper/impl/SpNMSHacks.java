@@ -227,37 +227,27 @@ public class SpNMSHacks implements NMSHacks {
   }
 
   @Override
-  public boolean isDisplayEntity(Entity entity) {
+  public boolean isBlockDisplayEntity(Entity entity) {
     return false;
   }
 
   @Override
-  public void setInterpolationDurationDisplayEntity(Entity entity, int duration) {
-
-  }
-
-  @Override
-  public void setInterpolationDelayDisplayEntity(Entity entity, int delay) {
-
+  public boolean isBlockDisplayEntity(Class<? extends Entity> entity) {
+    return false;
   }
 
   @Override
   public void setTeleportationDuration(Entity entity, int duration) {
-
-  }
-
-  @Override
-  public boolean isDisplayEntity(Class<? extends Entity> entity) {
-    return false;
+    throw new UnsupportedOperationException("Teleportation duration is not supported on lower versions.");
   }
 
   @Override
   public void setBlockDisplayBlock(Entity entity, Material block) {
-    throw new UnsupportedOperationException("Display entities are not supported on lower versions.");
+    throw new UnsupportedOperationException("Block display entities are not supported on lower versions.");
   }
 
   @Override
   public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw, float scale) {
-    throw new UnsupportedOperationException("Display entities are not supported on lower versions.");
+    throw new UnsupportedOperationException("Block display entities are not supported on lower versions.");
   }
 }

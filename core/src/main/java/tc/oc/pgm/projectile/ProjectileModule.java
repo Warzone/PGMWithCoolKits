@@ -65,7 +65,7 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
             Node.fromAttr(projectileElement, "click"), ClickAction.class, ClickAction.BOTH);
         Class<? extends Entity> entity =
             XMLUtils.parseEntityTypeAttribute(projectileElement, "projectile", Arrow.class);
-        BlockMaterialData blockMaterial = entity.isAssignableFrom(FallingBlock.class) || NMSHacks.NMS_HACKS.isDisplayEntity(entity)
+        BlockMaterialData blockMaterial = entity.isAssignableFrom(FallingBlock.class) || NMSHacks.NMS_HACKS.isBlockDisplayEntity(entity)
             ? XMLUtils.parseBlockMaterialData(Node.fromAttr(projectileElement, "material"))
             : null;
         Float power = XMLUtils.parseNumber(
