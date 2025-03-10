@@ -391,24 +391,13 @@ public class ModernNMSHacks implements NMSHacks {
   }
 
   @Override
-  public boolean isDisplayEntity(Entity entity) {
-      return entity instanceof Display;
-
+  public boolean isBlockDisplayEntity(Entity entity) {
+    return entity instanceof BlockDisplay;
   }
 
   @Override
-  public boolean isDisplayEntity(Class<? extends Entity> entity) {
-      return entity.isAssignableFrom(BlockDisplay.class) || entity.isAssignableFrom(TextDisplay.class) || entity.isAssignableFrom(ItemDisplay.class);
-  }
-
-  @Override
-  public void setInterpolationDurationDisplayEntity(Entity entity, int duration) {
-    ((BlockDisplay) entity).setInterpolationDuration(duration);
-  }
-
-  @Override
-  public void setInterpolationDelayDisplayEntity(Entity entity, int delay) {
-    ((BlockDisplay) entity).setInterpolationDelay(delay);
+  public boolean isBlockDisplayEntity(Class<? extends Entity> entity) {
+    return entity.isAssignableFrom(BlockDisplay.class);
   }
 
   @Override
