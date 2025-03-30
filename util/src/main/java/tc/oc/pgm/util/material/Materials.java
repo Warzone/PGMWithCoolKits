@@ -52,6 +52,17 @@ public interface Materials {
       .addNullable(Material.getMaterial("MACE"))
       .build();
 
+  MaterialMatcher DOOR_ITEMS = MaterialMatcher.builder()
+      .addAll(m -> m.name().contains("_DOOR") && !m.isBlock())
+      .build();
+
+  // A set of item types which, when used to interact with the match environment by non-playing
+  // users, can potentially cause client-server de-sync
+  MaterialMatcher FORBIDDEN_OBSERVER_TYPES = MaterialMatcher.builder()
+      .add(DOOR_ITEMS)
+      .addAll(Materials.LILY_PAD, Material.BUCKET, Material.LAVA_BUCKET, Material.WATER_BUCKET)
+      .build();
+
   MaterialMatcher SOLID_EXCLUSIONS = MaterialMatcher.builder()
       .add(parse("SIGN_POST", "LEGACY_SIGN_POST")) // on modern, it's just *_SIGN
       .addAll(m -> m.name().endsWith("_PLATE") || m.name().endsWith("_SIGN"))

@@ -1,10 +1,7 @@
 package tc.oc.pgm.spawns.states;
 
-import java.util.EnumSet;
-import java.util.Set;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -12,7 +9,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.material.Door;
 import tc.oc.pgm.api.match.event.MatchStartEvent;
 import tc.oc.pgm.api.party.Competitor;
 import tc.oc.pgm.api.player.MatchPlayer;
@@ -25,11 +21,6 @@ import tc.oc.pgm.util.block.BlockVectors;
 import tc.oc.pgm.util.material.Materials;
 
 public class Observing extends State {
-
-  // A set of item types which, when used to interact with the match environment by non-playing
-  // users, can potentially cause client-server de-sync
-  private static final Set<Material> BAD_TYPES =
-      EnumSet.of(Materials.LILY_PAD, Material.BUCKET, Material.LAVA_BUCKET, Material.WATER_BUCKET);
 
   private static final double VOID_HEIGHT = -64;
 
@@ -131,7 +122,7 @@ public class Observing extends State {
         || event.getCursor() == null) return;
 
     ItemStack item = event.getCursor();
-    if (BAD_TYPES.contains(item.getType()) || item.getData() instanceof Door) {
+    if (Materials.FORBIDDEN_OBSERVER_TYPES.matches(item)) {
       event.setCancelled(true);
     }
   }
