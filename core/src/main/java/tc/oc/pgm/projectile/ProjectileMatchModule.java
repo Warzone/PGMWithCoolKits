@@ -3,6 +3,8 @@ package tc.oc.pgm.projectile;
 import static tc.oc.pgm.util.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -142,28 +144,49 @@ public class ProjectileMatchModule implements MatchModule, Listener {
           final LinearProjectilePath linearProjectilePath = new LinearProjectilePath(
             normalizedDirection, projectileDefinition.velocity
           );
+          final Location initialLocation = projectile.getLocation();
           runFixedTimesAtPeriod(
               match.getExecutor(MatchScope.RUNNING),
               new BooleanSupplier() {
                 private int progress = 0;
 
+
                 @Override
                 public boolean getAsBoolean() {
                   NMSHacks.NMS_HACKS.setTeleportationDuration(projectile, 1);
-                  projectile.teleport(calculateTo(projectile, linearProjectilePath, ++progress));
 
-                  if (projectileDefinition.damage != null) {
-                    List<Entity> nearbyEntities = projectile.getNearbyEntities(0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale);
-                    if (!nearbyEntities.isEmpty()) {
-                      Party playerParty = PGM.get().getMatchManager().getPlayer(player).getParty();
-                      for (Entity entity : nearbyEntities) {
-                        if (entity instanceof Player) {
-                          if (playerParty != PGM.get().getMatchManager().getPlayer(((Player) entity)).getParty()) {
-                            ((Player) entity).damage(projectileDefinition.damage, player);
-                            return true;
+                  Location currentLocation = projectile.getLocation();
+                  Location incrementingLocation = currentLocation.clone();
+                  Location newLocation = calculateTo(initialLocation, linearProjectilePath, ++progress);
+
+                  projectile.teleport(newLocation);
+                  if (projectileDefinition.damage != null || projectileDefinition.solidBlockCollision) {
+                    boolean finished = false;
+                    while (true) {
+                      if (currentLocation.distanceSquared(incrementingLocation) > currentLocation.distanceSquared(newLocation)) {
+                        incrementingLocation = newLocation.clone();
+                        finished = true;
+                      }
+                      if (projectileDefinition.damage != null) {
+                        Collection<Entity> nearbyEntities = incrementingLocation.getNearbyEntities(0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale);
+                        if (!nearbyEntities.isEmpty()) {
+                          Party playerParty = PGM.get().getMatchManager().getPlayer(player).getParty();
+                          for (Entity entity : nearbyEntities) {
+                            if (entity instanceof Player) {
+                              if (playerParty != PGM.get().getMatchManager().getPlayer(((Player) entity)).getParty()) {
+                                ((Player) entity).damage(projectileDefinition.damage, player);
+                                return true;
+                              }
+                            }
                           }
                         }
                       }
+//                      if (projectileDefinition.solidBlockCollision) {
+//                        TODO: add block collision
+//                      }
+
+                      if (finished) break;
+                      incrementingLocation.add(normalizedDirection);
                     }
                   }
                   return false;
@@ -202,10 +225,10 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 
   // For entities which need their velocity simulated
   private Location calculateTo(
-          final Entity entity,
+          final Location entityLocation,
           final ProjectilePath path,
           final int progress) {
-    return entity.getLocation().clone().add(path.getPositionAtProgress(progress));
+    return entityLocation.clone().add(path.getPositionAtProgress(progress));
   }
 
   private static void runFixedTimesAtPeriod(
