@@ -181,9 +181,23 @@ public class ProjectileMatchModule implements MatchModule, Listener {
                           }
                         }
                       }
-//                      if (projectileDefinition.solidBlockCollision) {
-//                        TODO: add block collision
-//                      }
+                      if (projectileDefinition.solidBlockCollision) {
+                        double posScale = 0.5 * projectileDefinition.scale;
+                        double negScale = -0.5 * projectileDefinition.scale;
+
+                        Block b1 = incrementingLocation.clone().add(negScale, negScale, negScale).getBlock();
+                        Block b2 = incrementingLocation.clone().add(posScale, negScale, negScale).getBlock();
+                        Block b3 = incrementingLocation.clone().add(negScale, posScale, negScale).getBlock();
+                        Block b4 = incrementingLocation.clone().add(posScale, posScale, negScale).getBlock();
+                        Block b5 = incrementingLocation.clone().add(negScale, negScale, posScale).getBlock();
+                        Block b6 = incrementingLocation.clone().add(posScale, negScale, posScale).getBlock();
+                        Block b7 = incrementingLocation.clone().add(negScale, posScale, posScale).getBlock();
+                        Block b8 = incrementingLocation.clone().add(posScale, posScale, posScale).getBlock();
+
+                        if (b1.getType().isSolid() || b2.getType().isSolid() || b3.getType().isSolid() || b4.getType().isSolid() || b5.getType().isSolid() || b6.getType().isSolid() || b7.getType().isSolid() || b8.getType().isSolid()) {
+                          return true;
+                        }
+                      }
 
                       if (finished) break;
                       incrementingLocation.add(normalizedDirection);
