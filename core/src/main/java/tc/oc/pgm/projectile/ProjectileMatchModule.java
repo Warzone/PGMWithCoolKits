@@ -172,7 +172,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
                   return false;
                 }
               },
-              1L, 4000, projectile::remove
+              1L, projectileDefinition.maxTravelTime.toMillis(), projectile::remove
           );
         }
         projectile.setMetadata(
@@ -246,7 +246,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 
   private static void runFixedTimesAtPeriod(
         final ScheduledExecutorService scheduledExecutorService, final BooleanSupplier runnable,
-        final long periodTicks, final int upperBoundMillis,
+        final long periodTicks, final long upperBoundMillis,
         final Runnable finishHandler
   ) {
     final ScheduledFuture<?>[] ref = new ScheduledFuture[2];
