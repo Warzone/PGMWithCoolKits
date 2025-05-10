@@ -226,11 +226,6 @@ public class SpNMSHacks implements NMSHacks {
   }
 
   @Override
-  public boolean isBlockDisplayEntity(Entity entity) {
-    return false;
-  }
-
-  @Override
   public boolean isBlockDisplayEntity(Class<? extends Entity> entity) {
     return false;
   }
