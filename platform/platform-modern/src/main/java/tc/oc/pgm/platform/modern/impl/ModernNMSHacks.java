@@ -421,8 +421,6 @@ public class ModernNMSHacks implements NMSHacks {
     rotation.get(rotationMatrix);
 
     final Matrix4f scaleMatrix = new Matrix4f().scale(scale);
-
-    // final Matrix4f transformationMatrix = translation.mul(rotationMatrix.mul(scale));
     final Matrix4f transformationMatrix = rotationMatrix.mul(translation.mul(scaleMatrix));
     ((BlockDisplay) entity).setTransformationMatrix(
         transformationMatrix

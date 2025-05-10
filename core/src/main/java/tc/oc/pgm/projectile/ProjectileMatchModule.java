@@ -249,8 +249,6 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         final long periodTicks, final int upperBoundMillis,
         final Runnable finishHandler
   ) {
-    // effectively final capture
-    // https://docs.oracle.com/javase/specs/jls/se16/html/jls-15.html#jls-15.27.2
     final ScheduledFuture<?>[] ref = new ScheduledFuture[2];
     final ScheduledFuture<?> mainTask = scheduledExecutorService.scheduleAtFixedRate(
         () -> {
