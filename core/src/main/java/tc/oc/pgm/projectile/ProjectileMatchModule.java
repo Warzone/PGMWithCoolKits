@@ -162,7 +162,9 @@ public class ProjectileMatchModule implements MatchModule, Listener {
                   projectile.teleport(newLocation);
                   if (projectileDefinition.damage != null || projectileDefinition.solidBlockCollision) {
                     boolean finished = false;
+                    int counter = 1;
                     while (true) {
+                      System.out.println("counter: " + counter++);
                       if (currentLocation.distanceSquared(incrementingLocation) > currentLocation.distanceSquared(newLocation)) {
                         incrementingLocation = newLocation.clone();
                         finished = true;
@@ -200,7 +202,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
                       }
 
                       if (finished) break;
-                      incrementingLocation.add(normalizedDirection);
+                      incrementingLocation.add(normalizedDirection.clone().multiply(projectileDefinition.scale));
                     }
                   }
                   return false;
