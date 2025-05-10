@@ -129,7 +129,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         if (projectileDefinition.power != null && projectile instanceof Explosive) {
           ((Explosive) projectile).setYield(projectileDefinition.power);
         }
-        if (NMSHacks.NMS_HACKS.isBlockDisplayEntity(projectile)) {
+        if (NMSHacks.NMS_HACKS.isBlockDisplayEntity(projectileDefinition.projectile)) {
           Location loc = player.getEyeLocation();
           NMSHacks.NMS_HACKS.alignBlockDisplayToPlayerFacing(
               projectile,

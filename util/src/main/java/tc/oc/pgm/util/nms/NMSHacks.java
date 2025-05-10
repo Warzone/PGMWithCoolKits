@@ -59,8 +59,6 @@ public interface NMSHacks {
 
   int allocateEntityId();
 
-  boolean isBlockDisplayEntity(Entity entity);
-
   boolean isBlockDisplayEntity(Class<? extends Entity> entity);
 
   void setTeleportationDuration(Entity entity, int duration);
