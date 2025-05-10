@@ -232,16 +232,19 @@ public class SpNMSHacks implements NMSHacks {
 
   @Override
   public void setTeleportationDuration(Entity entity, int duration) {
-    throw new UnsupportedOperationException("Teleportation duration is not supported on lower versions.");
+    throw new UnsupportedOperationException(
+        "Teleportation duration is not supported on lower versions.");
   }
 
   @Override
   public void setBlockDisplayBlock(Entity entity, Material block) {
-    throw new UnsupportedOperationException("Block display entities are not supported on lower versions.");
+    throw new UnsupportedOperationException(
+        "Block display entities are not supported on lower versions.");
   }
 
   @Override
   public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw, float scale) {
-    throw new UnsupportedOperationException("Block display entities are not supported on lower versions.");
+    throw new UnsupportedOperationException(
+        "Block display entities are not supported on lower versions.");
   }
 }

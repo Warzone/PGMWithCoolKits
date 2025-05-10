@@ -3,14 +3,11 @@ package tc.oc.pgm.projectile;
 import static tc.oc.pgm.util.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
-
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.BooleanSupplier;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -53,6 +50,7 @@ import tc.oc.pgm.filters.query.BlockQuery;
 import tc.oc.pgm.filters.query.PlayerBlockQuery;
 import tc.oc.pgm.kits.tag.ItemTags;
 import tc.oc.pgm.projectile.path.LinearProjectilePath;
+import tc.oc.pgm.projectile.path.ParabolicProjectilePath;
 import tc.oc.pgm.projectile.path.ProjectilePath;
 import tc.oc.pgm.util.bukkit.MetadataUtils;
 import tc.oc.pgm.util.inventory.InventoryUtils;
@@ -121,8 +119,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
               loc.setPitch(0);
               loc.setYaw(0);
             }
-            projectile =
-                player.getWorld().spawn(loc, projectileDefinition.projectile);
+            projectile = player.getWorld().spawn(loc, projectileDefinition.projectile);
           }
           projectile.setVelocity(velocity);
         }
@@ -132,24 +129,23 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         if (NMSHacks.NMS_HACKS.isBlockDisplayEntity(projectileDefinition.projectile)) {
           Location loc = player.getEyeLocation();
           NMSHacks.NMS_HACKS.alignBlockDisplayToPlayerFacing(
-              projectile,
-              loc.getPitch(),
-              loc.getYaw(),
-              projectileDefinition.scale
-          );
+              projectile, loc.getPitch(), loc.getYaw(), projectileDefinition.scale);
 
-          NMSHacks.NMS_HACKS.setBlockDisplayBlock(projectile, projectileDefinition.blockMaterial.getItemType());
+          NMSHacks.NMS_HACKS.setBlockDisplayBlock(
+              projectile, projectileDefinition.blockMaterial.getItemType());
 
           final Vector normalizedDirection = player.getLocation().getDirection().normalize();
-          final LinearProjectilePath linearProjectilePath = new LinearProjectilePath(
-            normalizedDirection, projectileDefinition.velocity
-          );
+          final ProjectilePath projectilePath = projectileDefinition.gravityAffected
+              ? new ParabolicProjectilePath(
+                  normalizedDirection.multiply(projectileDefinition.velocity),
+                  projectileDefinition.velocity,
+                  projectileDefinition.gravity)
+              : new LinearProjectilePath(normalizedDirection, projectileDefinition.velocity);
           final Location initialLocation = projectile.getLocation();
           runFixedTimesAtPeriod(
               match.getExecutor(MatchScope.RUNNING),
               new BooleanSupplier() {
                 private int progress = 0;
-
 
                 @Override
                 public boolean getAsBoolean() {
@@ -157,23 +153,29 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 
                   Location currentLocation = projectile.getLocation();
                   Location incrementingLocation = currentLocation.clone();
-                  Location newLocation = calculateTo(initialLocation, linearProjectilePath, ++progress);
+                  Location newLocation = calculateTo(initialLocation, projectilePath, ++progress);
 
                   projectile.teleport(newLocation);
-                  if (projectileDefinition.damage != null || projectileDefinition.solidBlockCollision) {
-                    while (currentLocation.distanceSquared(incrementingLocation) < currentLocation.distanceSquared(newLocation)) {
-                      if (blockDisplayCollision(projectileDefinition, player, incrementingLocation)) {
+                  if (projectileDefinition.damage != null
+                      || projectileDefinition.solidBlockCollision) {
+                    while (currentLocation.distanceSquared(incrementingLocation)
+                        < currentLocation.distanceSquared(newLocation)) {
+                      if (blockDisplayCollision(
+                          projectileDefinition, player, incrementingLocation)) {
                         return true;
                       }
-                      incrementingLocation.add(normalizedDirection.clone().multiply(projectileDefinition.scale));
+                      incrementingLocation.add(
+                          normalizedDirection.clone().multiply(projectileDefinition.scale));
                     }
-                    return blockDisplayCollision(projectileDefinition, player, incrementingLocation);
+                    return blockDisplayCollision(
+                        projectileDefinition, player, incrementingLocation);
                   }
                   return false;
                 }
               },
-              1L, projectileDefinition.maxTravelTime.toMillis(), projectile::remove
-          );
+              1L,
+              projectileDefinition.maxTravelTime.toMillis(),
+              projectile::remove);
         }
         projectile.setMetadata(
             "projectileDefinition", new FixedMetadataValue(PGM.get(), projectileDefinition));
@@ -203,14 +205,19 @@ public class ProjectileMatchModule implements MatchModule, Listener {
     }
   }
 
-  private boolean blockDisplayCollision(ProjectileDefinition projectileDefinition, Player player, Location location) {
+  private boolean blockDisplayCollision(
+      ProjectileDefinition projectileDefinition, Player player, Location location) {
     if (projectileDefinition.damage != null) {
-      Collection<Entity> nearbyEntities = location.getNearbyEntities(0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale, 0.5 * projectileDefinition.scale);
+      Collection<Entity> nearbyEntities = location.getNearbyEntities(
+          0.5 * projectileDefinition.scale,
+          0.5 * projectileDefinition.scale,
+          0.5 * projectileDefinition.scale);
       if (!nearbyEntities.isEmpty()) {
         Party playerParty = PGM.get().getMatchManager().getPlayer(player).getParty();
         for (Entity entity : nearbyEntities) {
           if (entity instanceof Player) {
-            if (playerParty != PGM.get().getMatchManager().getPlayer(((Player) entity)).getParty()) {
+            if (playerParty
+                != PGM.get().getMatchManager().getPlayer(((Player) entity)).getParty()) {
               ((Player) entity).damage(projectileDefinition.damage, player);
               return true;
             }
@@ -231,24 +238,30 @@ public class ProjectileMatchModule implements MatchModule, Listener {
       Block b7 = location.clone().add(negScale, posScale, posScale).getBlock();
       Block b8 = location.clone().add(posScale, posScale, posScale).getBlock();
 
-      return b1.getType().isSolid() || b2.getType().isSolid() || b3.getType().isSolid() || b4.getType().isSolid() || b5.getType().isSolid() || b6.getType().isSolid() || b7.getType().isSolid() || b8.getType().isSolid();
+      return b1.getType().isSolid()
+          || b2.getType().isSolid()
+          || b3.getType().isSolid()
+          || b4.getType().isSolid()
+          || b5.getType().isSolid()
+          || b6.getType().isSolid()
+          || b7.getType().isSolid()
+          || b8.getType().isSolid();
     }
     return false;
   }
 
   // For entities which need their velocity simulated
   private Location calculateTo(
-          final Location entityLocation,
-          final ProjectilePath path,
-          final int progress) {
+      final Location entityLocation, final ProjectilePath path, final int progress) {
     return entityLocation.clone().add(path.getPositionAtProgress(progress));
   }
 
   private static void runFixedTimesAtPeriod(
-        final ScheduledExecutorService scheduledExecutorService, final BooleanSupplier runnable,
-        final long periodTicks, final long upperBoundMillis,
-        final Runnable finishHandler
-  ) {
+      final ScheduledExecutorService scheduledExecutorService,
+      final BooleanSupplier runnable,
+      final long periodTicks,
+      final long upperBoundMillis,
+      final Runnable finishHandler) {
     final ScheduledFuture<?>[] ref = new ScheduledFuture[2];
     final ScheduledFuture<?> mainTask = scheduledExecutorService.scheduleAtFixedRate(
         () -> {
@@ -258,13 +271,18 @@ public class ProjectileMatchModule implements MatchModule, Listener {
             ref[1].cancel(true);
             finishHandler.run();
           }
-        }, 0L, periodTicks * 50L, TimeUnit.MILLISECONDS
-    );
-    final ScheduledFuture<?> cleanupTask = scheduledExecutorService.schedule(() -> {
-      if (ref[0].isCancelled()) return;
-      ref[0].cancel(true);
-      finishHandler.run();
-    }, upperBoundMillis, TimeUnit.MILLISECONDS);
+        },
+        0L,
+        periodTicks * 50L,
+        TimeUnit.MILLISECONDS);
+    final ScheduledFuture<?> cleanupTask = scheduledExecutorService.schedule(
+        () -> {
+          if (ref[0].isCancelled()) return;
+          ref[0].cancel(true);
+          finishHandler.run();
+        },
+        upperBoundMillis,
+        TimeUnit.MILLISECONDS);
     ref[0] = mainTask;
     ref[1] = cleanupTask;
   }
