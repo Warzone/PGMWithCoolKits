@@ -391,11 +391,6 @@ public class ModernNMSHacks implements NMSHacks {
   }
 
   @Override
-  public boolean isBlockDisplayEntity(Entity entity) {
-    return entity instanceof BlockDisplay;
-  }
-
-  @Override
   public boolean isBlockDisplayEntity(Class<? extends Entity> entity) {
     return entity.isAssignableFrom(BlockDisplay.class);
   }
