@@ -79,6 +79,7 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
         boolean precise = XMLUtils.parseBoolean(projectileElement.getAttribute("precise"), true);
         float scale = XMLUtils.parseNumber(Node.fromChildOrAttr(projectileElement, "scale"), Float.class, 1.0f);
         boolean solidBlockCollision = XMLUtils.parseBoolean(projectileElement.getAttribute("solid-block-collision"), true);
+        Duration maxTravelTime = XMLUtils.parseDuration(projectileElement.getAttribute("max-travel-time"), Duration.ofSeconds(1));
 
         ProjectileDefinition projectileDefinition = new ProjectileDefinition(
             id,
@@ -95,7 +96,8 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
             precise,
             blockMaterial,
             scale,
-            solidBlockCollision);
+            solidBlockCollision,
+            maxTravelTime);
 
         factory.getFeatures().addFeature(projectileElement, projectileDefinition);
         projectiles.add(projectileDefinition);
