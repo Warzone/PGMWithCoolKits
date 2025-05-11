@@ -25,6 +25,8 @@ public class ProjectileDefinition extends SelfIdentifyingFeatureDefinition {
   protected float scale;
   protected boolean solidBlockCollision;
   protected Duration maxTravelTime;
+  protected boolean gravityAffected;
+  protected double gravity;
 
   public ProjectileDefinition(
       @Nullable String id,
@@ -42,7 +44,9 @@ public class ProjectileDefinition extends SelfIdentifyingFeatureDefinition {
       BlockMaterialData blockMaterial,
       float scale,
       boolean solidBlockCollision,
-      Duration maxTravelTime) {
+      Duration maxTravelTime,
+      boolean gravityAffected,
+      double gravity) {
     super(id);
     this.name = name;
     this.damage = damage;
@@ -59,6 +63,8 @@ public class ProjectileDefinition extends SelfIdentifyingFeatureDefinition {
     this.scale = scale;
     this.solidBlockCollision = solidBlockCollision;
     this.maxTravelTime = maxTravelTime;
+    this.gravityAffected = gravityAffected;
+    this.gravity = gravity;
   }
 
   public @Nullable String getName() {

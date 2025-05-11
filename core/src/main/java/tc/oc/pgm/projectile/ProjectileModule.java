@@ -65,7 +65,8 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
             Node.fromAttr(projectileElement, "click"), ClickAction.class, ClickAction.BOTH);
         Class<? extends Entity> entity =
             XMLUtils.parseEntityTypeAttribute(projectileElement, "projectile", Arrow.class);
-        BlockMaterialData blockMaterial = entity.isAssignableFrom(FallingBlock.class) || NMSHacks.NMS_HACKS.isBlockDisplayEntity(entity)
+        BlockMaterialData blockMaterial = entity.isAssignableFrom(FallingBlock.class)
+                || NMSHacks.NMS_HACKS.isBlockDisplayEntity(entity)
             ? XMLUtils.parseBlockMaterialData(Node.fromAttr(projectileElement, "material"))
             : null;
         Float power = XMLUtils.parseNumber(
@@ -77,9 +78,16 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
         boolean throwable =
             XMLUtils.parseBoolean(projectileElement.getAttribute("throwable"), true);
         boolean precise = XMLUtils.parseBoolean(projectileElement.getAttribute("precise"), true);
-        float scale = XMLUtils.parseNumber(Node.fromChildOrAttr(projectileElement, "scale"), Float.class, 1.0f);
-        boolean solidBlockCollision = XMLUtils.parseBoolean(projectileElement.getAttribute("solid-block-collision"), true);
-        Duration maxTravelTime = XMLUtils.parseDuration(projectileElement.getAttribute("max-travel-time"), Duration.ofSeconds(1));
+        float scale = XMLUtils.parseNumber(
+            Node.fromChildOrAttr(projectileElement, "scale"), Float.class, 1.0f);
+        boolean solidBlockCollision =
+            XMLUtils.parseBoolean(projectileElement.getAttribute("solid-block-collision"), true);
+        Duration maxTravelTime = XMLUtils.parseDuration(
+            projectileElement.getAttribute("max-travel-time"), Duration.ofSeconds(1));
+        boolean gravityAffected =
+            XMLUtils.parseBoolean(projectileElement.getAttribute("gravity-affected"), false);
+        double gravity =
+            XMLUtils.parseNumber(projectileElement.getAttribute("gravity"), Double.class, 0.03);
 
         ProjectileDefinition projectileDefinition = new ProjectileDefinition(
             id,
@@ -97,7 +105,9 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
             blockMaterial,
             scale,
             solidBlockCollision,
-            maxTravelTime);
+            maxTravelTime,
+            gravityAffected,
+            gravity);
 
         factory.getFeatures().addFeature(projectileElement, projectileDefinition);
         projectiles.add(projectileDefinition);

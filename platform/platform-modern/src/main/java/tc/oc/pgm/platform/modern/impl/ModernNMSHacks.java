@@ -1,9 +1,19 @@
 package tc.oc.pgm.platform.modern.impl;
 
+import static tc.oc.pgm.util.nms.Packets.ENTITIES;
+import static tc.oc.pgm.util.platform.Supports.Variant.PAPER;
+
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -60,17 +70,6 @@ import tc.oc.pgm.util.material.BlockMaterialData;
 import tc.oc.pgm.util.nms.NMSHacks;
 import tc.oc.pgm.util.platform.Supports;
 import tc.oc.pgm.util.skin.Skin;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.logging.Level;
-
-import static tc.oc.pgm.util.nms.Packets.ENTITIES;
-import static tc.oc.pgm.util.platform.Supports.Variant.PAPER;
 
 @Supports(value = PAPER, minVersion = "1.20.6")
 public class ModernNMSHacks implements NMSHacks {
@@ -407,12 +406,8 @@ public class ModernNMSHacks implements NMSHacks {
 
   @Override
   public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw, float scale) {
-    final Matrix4f translation = new Matrix4f().translate(
-        new Vector3f(
-            -0.5f * scale,
-            -0.5f * scale,
-            -0.5f * scale
-        ));
+    final Matrix4f translation =
+        new Matrix4f().translate(new Vector3f(-0.5f * scale, -0.5f * scale, -0.5f * scale));
 
     final Matrix4f rotationMatrix = new Matrix4f();
     final Quaternionf rotation = new Quaternionf();
@@ -422,8 +417,6 @@ public class ModernNMSHacks implements NMSHacks {
 
     final Matrix4f scaleMatrix = new Matrix4f().scale(scale);
     final Matrix4f transformationMatrix = rotationMatrix.mul(translation.mul(scaleMatrix));
-    ((BlockDisplay) entity).setTransformationMatrix(
-        transformationMatrix
-    );
+    ((BlockDisplay) entity).setTransformationMatrix(transformationMatrix);
   }
 }
