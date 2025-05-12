@@ -11,6 +11,10 @@ public interface FakeEntity {
 
   Packet spawn(Location location, org.bukkit.util.Vector velocity);
 
+  default boolean needsInitialRotationAdjusted() {
+    return false;
+  }
+
   default Packet spawn(Location location) {
     return spawn(location, new org.bukkit.util.Vector(0, 0, 0));
   }

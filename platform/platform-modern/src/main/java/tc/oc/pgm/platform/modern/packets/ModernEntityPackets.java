@@ -20,6 +20,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -38,6 +39,24 @@ public class ModernEntityPackets implements EntityPackets {
       new EntityDataAccessor<>(0, EntityDataSerializers.BYTE);
   private static final EntityDataAccessor<Integer> ENTITY_AIR =
       new EntityDataAccessor<>(1, EntityDataSerializers.INT);
+
+  @Override
+  public Packet spawnRealAndValidBlockEntity(Location loc, int entityId) {
+    return new ModernPacket<>(new ClientboundBundlePacket(List.of(
+          new ClientboundAddEntityPacket(
+                entityId,
+                UUID.randomUUID(),
+                loc.getX(),
+                loc.getY(),
+                loc.getZ(),
+                loc.getPitch(),
+                loc.getYaw(),
+                EntityType.BLOCK_DISPLAY,
+                0,
+                  Vec3.ZERO,
+                0)
+          )));
+  }
 
   @Override
   public Packet spawnArmorStand(Location loc, int entityId, Vector velocity) {

@@ -31,6 +31,15 @@ public interface EntityPackets {
     };
   }
 
+  default FakeEntity fakeBlockEntity() {
+    return new FakeEntity.Impl(allocateEntityId()) {
+      @Override
+      public Packet spawn(Location location, Vector velocity) {
+        return spawnRealAndValidBlockEntity(location, entityId());
+      }
+    };
+  }
+
   default FakeEntity fakeArmorStand(@Nullable ItemStack helmet) {
     return new FakeEntity.Impl(allocateEntityId()) {
       @Override
@@ -88,6 +97,8 @@ public interface EntityPackets {
     };
   }
 
+  Packet spawnRealAndValidBlockEntity(Location loc, int entityId);
+
   Packet spawnArmorStand(Location loc, int entityId, Vector velocity);
 
   Packet spawnWitherSkull(Location location, int entityId, Vector velocity);
@@ -106,4 +117,5 @@ public interface EntityPackets {
   Packet entityHeadEquipment(int entityId, ItemStack helmet);
 
   Packet entityMetadataPacket(int entityId, Entity entity, boolean complete);
+
 }
