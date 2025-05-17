@@ -138,6 +138,9 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
       if (entity instanceof ProjectileDefinition.ProjectileEntity.RealEntity) {
         final Class<? extends Entity> cls = ((ProjectileDefinition.ProjectileEntity.RealEntity) entity).entityType;
         return cls.isAssignableFrom(FallingBlock.class) || NMSHacks.NMS_HACKS.isBlockDisplayEntity(cls);
+      } else if (entity instanceof ProjectileDefinition.ProjectileEntity.AbstractEntity) {
+        return ((ProjectileDefinition.ProjectileEntity.AbstractEntity) entity).entityType ==
+                ProjectileDefinition.ProjectileEntity.AbstractEntityType.BLOCK;
       }
       return false;
     }
