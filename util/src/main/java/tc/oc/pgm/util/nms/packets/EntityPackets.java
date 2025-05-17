@@ -91,8 +91,6 @@ public interface EntityPackets {
 
   BlockEntity spawnBlockEntity(Location loc, BlockMaterialData blockMaterialData);
 
-  Packet spawnRealAndValidBlockEntity(Location loc, int entityId);
-
   Packet spawnArmorStand(Location loc, int entityId, Vector velocity);
 
   Packet spawnWitherSkull(Location location, int entityId, Vector velocity);
@@ -111,5 +109,4 @@ public interface EntityPackets {
   Packet entityHeadEquipment(int entityId, ItemStack helmet);
 
   Packet entityMetadataPacket(int entityId, Entity entity, boolean complete);
-
 }

@@ -49,27 +49,8 @@ public class ModernEntityPackets implements EntityPackets {
 
   @Override
   public BlockEntity spawnBlockEntity(Location loc, BlockMaterialData blockMaterialData) {
-    // i hate pablo
     final Entity entity = loc.getWorld().spawn(loc, BlockDisplay.class);
     return new DisplayEntity(entity);
-  }
-
-  @Override
-  public Packet spawnRealAndValidBlockEntity(Location loc, int entityId) {
-    return new ModernPacket<>(new ClientboundBundlePacket(List.of(
-          new ClientboundAddEntityPacket(
-                entityId,
-                UUID.randomUUID(),
-                loc.getX(),
-                loc.getY(),
-                loc.getZ(),
-                loc.getPitch(),
-                loc.getYaw(),
-                EntityType.BLOCK_DISPLAY,
-                0,
-                  Vec3.ZERO,
-                0)
-          )));
   }
 
   @Override
