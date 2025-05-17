@@ -124,7 +124,8 @@ public class ProjectileMatchModule implements MatchModule, Listener {
             NMSHacks.NMS_HACKS.setFireballDirection(fireball, velocity);
           }
         } else {
-          if (FallingBlock.class.isAssignableFrom((((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType))) {
+          if ((projectileDefinition.projectile instanceof ProjectileDefinition.ProjectileEntity.RealEntity) &&
+                  FallingBlock.class.isAssignableFrom((((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType))) {
             projectile =
                 projectileDefinition.blockMaterial.spawnFallingBlock(player.getEyeLocation());
           } else {
