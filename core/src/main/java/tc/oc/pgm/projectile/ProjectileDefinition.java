@@ -15,7 +15,7 @@ public class ProjectileDefinition extends SelfIdentifyingFeatureDefinition {
   protected @Nullable Float power;
   protected double velocity;
   protected ClickAction clickAction;
-  protected Class<? extends Entity> projectile;
+  protected ProjectileEntity projectile;
   protected List<PotionEffect> potion;
   protected Filter destroyFilter;
   protected Duration coolDown;
@@ -33,7 +33,7 @@ public class ProjectileDefinition extends SelfIdentifyingFeatureDefinition {
       @Nullable Float power,
       double velocity,
       ClickAction clickAction,
-      Class<? extends Entity> entity,
+      ProjectileEntity entity,
       List<PotionEffect> potion,
       Filter destroyFilter,
       Duration coolDown,
@@ -59,6 +59,28 @@ public class ProjectileDefinition extends SelfIdentifyingFeatureDefinition {
     this.scale = scale;
     this.solidBlockCollision = solidBlockCollision;
     this.maxTravelTime = maxTravelTime;
+  }
+
+  public static sealed class ProjectileEntity {
+    public static final class RealEntity extends ProjectileEntity {
+      public final Class<? extends Entity> entityType;
+
+      public RealEntity(Class<? extends Entity> entityType) {
+        this.entityType = entityType;
+      }
+    }
+
+    public static final class AbstractEntity extends ProjectileEntity {
+      public final AbstractEntityType entityType;
+
+      public AbstractEntity(AbstractEntityType entityType) {
+        this.entityType = entityType;
+      }
+    }
+
+    enum AbstractEntityType {
+      BLOCK
+    }
   }
 
   public @Nullable String getName() {

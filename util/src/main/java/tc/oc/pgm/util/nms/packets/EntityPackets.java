@@ -15,6 +15,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.StringUtils;
 import tc.oc.pgm.util.nms.EnumPlayerInfoAction;
+import tc.oc.pgm.util.material.BlockMaterialData;
 
 public interface EntityPackets {
 
@@ -27,15 +28,6 @@ public interface EntityPackets {
       @Override
       public Packet spawn(Location location, Vector velocity) {
         return spawnWitherSkull(location, entityId(), velocity);
-      }
-    };
-  }
-
-  default FakeEntity fakeBlockEntity() {
-    return new FakeEntity.Impl(allocateEntityId()) {
-      @Override
-      public Packet spawn(Location location, Vector velocity) {
-        return spawnRealAndValidBlockEntity(location, entityId());
       }
     };
   }
@@ -96,6 +88,8 @@ public interface EntityPackets {
       }
     };
   }
+
+  BlockEntity spawnBlockEntity(Location loc, BlockMaterialData blockMaterialData);
 
   Packet spawnRealAndValidBlockEntity(Location loc, int entityId);
 
