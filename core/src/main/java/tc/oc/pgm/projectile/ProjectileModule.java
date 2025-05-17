@@ -1,11 +1,13 @@
 package tc.oc.pgm.projectile;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.bukkit.entity.Arrow;
@@ -63,9 +65,9 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
             Node.fromChildOrAttr(projectileElement, "velocity"), Double.class, 1.0);
         ClickAction clickAction = XMLUtils.parseEnum(
             Node.fromAttr(projectileElement, "click"), ClickAction.class, ClickAction.BOTH);
-        Class<? extends Entity> entity =
-            XMLUtils.parseEntityTypeAttribute(projectileElement, "projectile", Arrow.class);
-        BlockMaterialData blockMaterial = entity.isAssignableFrom(FallingBlock.class) || NMSHacks.NMS_HACKS.isBlockDisplayEntity(entity)
+        ProjectileDefinition.ProjectileEntity entity =
+                parseProjectileEntity(projectileElement, "projectile", Arrow.class);
+        BlockMaterialData blockMaterial = acceptsBlockMaterial(entity)
             ? XMLUtils.parseBlockMaterialData(Node.fromAttr(projectileElement, "material"))
             : null;
         Float power = XMLUtils.parseNumber(
@@ -104,6 +106,40 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
       }
 
       return projectiles.isEmpty() ? null : new ProjectileModule(ImmutableSet.copyOf(projectiles));
+    }
+
+    private static final Map<String, ProjectileDefinition.ProjectileEntity.AbstractEntity> ABSTRACT_ENTITY_MAP =
+        ImmutableMap.of(
+          "block", new ProjectileDefinition.ProjectileEntity.AbstractEntity(
+                  ProjectileDefinition.ProjectileEntity.AbstractEntityType.BLOCK
+              )
+        );
+
+    private static ProjectileDefinition.ProjectileEntity parseProjectileEntity(
+      final Element element,
+      final String attributeName,
+      final Class<? extends Entity> def
+    ) throws InvalidXMLException {
+      final Node node = Node.fromAttr(element, attributeName);
+      if (node == null) {
+        return new ProjectileDefinition.ProjectileEntity.RealEntity(def);
+      }
+      final String entityText = node.getValue();
+      if (!entityText.matches("[a-zA-Z0-9_]+")) {
+        throw new InvalidXMLException("Invalid entity type '" + entityText + "'", node);
+      }
+      if (ABSTRACT_ENTITY_MAP.containsKey(entityText)) {
+        return ABSTRACT_ENTITY_MAP.get(entityText);
+      }
+      return new ProjectileDefinition.ProjectileEntity.RealEntity(XMLUtils.parseEntityTypeAttribute(element, attributeName, def));
+    }
+
+    private static boolean acceptsBlockMaterial(final ProjectileDefinition.ProjectileEntity entity) {
+      if (entity instanceof ProjectileDefinition.ProjectileEntity.RealEntity) {
+        final Class<? extends Entity> cls = ((ProjectileDefinition.ProjectileEntity.RealEntity) entity).entityType;
+        return cls.isAssignableFrom(FallingBlock.class) || NMSHacks.NMS_HACKS.isBlockDisplayEntity(cls);
+      }
+      return false;
     }
   }
 }
