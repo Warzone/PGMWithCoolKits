@@ -109,7 +109,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
       }
       Vector velocity =
           player.getEyeLocation().getDirection().multiply(projectileDefinition.velocity);
-      Entity projectile;
+      Entity projectile = null;
       BlockEntity blockEntity = null;
       try {
         assertTrue(launchingDefinition.get() == null, "nested projectile launch");
@@ -130,14 +130,16 @@ public class ProjectileMatchModule implements MatchModule, Listener {
                 projectileDefinition.blockMaterial.spawnFallingBlock(player.getEyeLocation());
           } else {
             Location loc = player.getEyeLocation();
-            blockEntity = ENTITIES.spawnBlockEntity(loc, projectileDefinition.blockMaterial);
-            if (blockEntity.isDisplayEntity()) {
+            if ((projectileDefinition.projectile instanceof ProjectileDefinition.ProjectileEntity.AbstractEntity) &&
+                    ((ProjectileDefinition.ProjectileEntity.AbstractEntity) projectileDefinition.projectile).entityType == ProjectileDefinition.ProjectileEntity.AbstractEntityType.BLOCK) {
               loc.setPitch(0);
               loc.setYaw(0);
+              blockEntity = ENTITIES.spawnBlockEntity(loc, projectileDefinition.blockMaterial);
+              projectile = blockEntity.entity();
+            } else if (projectileDefinition.projectile instanceof ProjectileDefinition.ProjectileEntity.RealEntity) {
+              projectile =
+                      player.getWorld().spawn(loc, ((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType);
             }
-            projectile = blockEntity.entity();
-//            projectile =
-//                player.getWorld().spawn(loc, projectileDefinition.projectile);
           }
           projectile.setVelocity(velocity);
         }
@@ -146,6 +148,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         }
         if (blockEntity != null && blockEntity.isDisplayEntity()) {
           Location loc = player.getEyeLocation();
+
           blockEntity.align(loc.getPitch(), loc.getYaw(), projectileDefinition.scale);
 //          NMSHacks.NMS_HACKS.alignBlockDisplayToPlayerFacing(
 //              projectile,
@@ -171,6 +174,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
           // )
           //
           BlockEntity finalBlockEntity = blockEntity;
+          Entity finalProjectile = projectile;
           runFixedTimesAtPeriod(
               match.getExecutor(MatchScope.RUNNING),
               new BooleanSupplier() {
@@ -182,11 +186,11 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 //                  NMSHacks.NMS_HACKS.setTeleportationDuration(projectile, 1);
                   finalBlockEntity.setTeleportationDuration(1);
 
-                  Location currentLocation = projectile.getLocation();
+                  Location currentLocation = finalProjectile.getLocation();
                   Location incrementingLocation = currentLocation.clone();
                   Location newLocation = calculateTo(initialLocation, linearProjectilePath, ++progress);
 
-                  projectile.teleport(newLocation);
+                  finalProjectile.teleport(newLocation);
                   if (projectileDefinition.damage != null || projectileDefinition.solidBlockCollision) {
                     while (currentLocation.distanceSquared(incrementingLocation) < currentLocation.distanceSquared(newLocation)) {
                       if (blockDisplayCollision(projectileDefinition, player, incrementingLocation)) {
