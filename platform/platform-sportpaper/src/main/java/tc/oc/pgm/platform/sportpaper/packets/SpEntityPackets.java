@@ -40,23 +40,6 @@ public class SpEntityPackets implements EntityPackets {
   }
 
   @Override
-  public Packet spawnRealAndValidBlockEntity(Location loc, int entityId) {
-    DataWatcher dataWatcher = new DataWatcher(null);
-    return new SpPacket<>(new PacketPlayOutSpawnEntityLiving(
-          entityId,
-          (byte) EntityType.FALLING_BLOCK.getTypeId(),
-          loc.getX(),
-          loc.getY(),
-          loc.getZ(),
-          loc.getYaw(),
-          loc.getPitch(),
-          loc.getPitch(),
-          0, 0, 0,
-          dataWatcher
-    ));
-  }
-
-  @Override
   public Packet spawnArmorStand(Location loc, int entityId, Vector velocity) {
     DataWatcher dataWatcher = new DataWatcher(null);
     // https://wiki.vg/index.php?title=Entity_metadata&oldid=7415
