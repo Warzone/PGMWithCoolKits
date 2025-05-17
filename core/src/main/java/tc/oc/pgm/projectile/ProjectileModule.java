@@ -128,8 +128,8 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
       if (!entityText.matches("[a-zA-Z0-9_]+")) {
         throw new InvalidXMLException("Invalid entity type '" + entityText + "'", node);
       }
-      if (ABSTRACT_ENTITY_MAP.containsKey(entityText)) {
-        return ABSTRACT_ENTITY_MAP.get(entityText);
+      if (ABSTRACT_ENTITY_MAP.containsKey(entityText.toLowerCase())) {
+        return ABSTRACT_ENTITY_MAP.get(entityText.toLowerCase());
       }
       return new ProjectileDefinition.ProjectileEntity.RealEntity(XMLUtils.parseEntityTypeAttribute(element, attributeName, def));
     }

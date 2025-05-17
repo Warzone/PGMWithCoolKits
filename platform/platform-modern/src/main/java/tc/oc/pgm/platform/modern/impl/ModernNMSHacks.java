@@ -394,36 +394,4 @@ public class ModernNMSHacks implements NMSHacks {
   public boolean isBlockDisplayEntity(Class<? extends Entity> entity) {
     return entity.isAssignableFrom(BlockDisplay.class);
   }
-
-  @Override
-  public void setTeleportationDuration(Entity entity, int duration) {
-    ((BlockDisplay) entity).setTeleportDuration(duration);
-  }
-
-  @Override
-  public void setBlockDisplayBlock(Entity entity, Material block) {
-    ((BlockDisplay) entity).setBlock(block.createBlockData());
-  }
-
-  @Override
-  public void alignBlockDisplayToPlayerFacing(Entity entity, float pitch, float yaw, float scale) {
-    final Matrix4f translation = new Matrix4f().translate(
-        new Vector3f(
-            -0.5f * scale,
-            -0.5f * scale,
-            -0.5f * scale
-        ));
-
-    final Matrix4f rotationMatrix = new Matrix4f();
-    final Quaternionf rotation = new Quaternionf();
-    rotation.rotateLocalX((float) Math.toRadians(-1 * pitch));
-    rotation.rotateLocalY((float) Math.toRadians(180 - yaw));
-    rotation.get(rotationMatrix);
-
-    final Matrix4f scaleMatrix = new Matrix4f().scale(scale);
-    final Matrix4f transformationMatrix = rotationMatrix.mul(translation.mul(scaleMatrix));
-    ((BlockDisplay) entity).setTransformationMatrix(
-        transformationMatrix
-    );
-  }
 }
