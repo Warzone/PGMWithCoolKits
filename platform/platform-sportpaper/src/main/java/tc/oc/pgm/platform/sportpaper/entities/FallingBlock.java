@@ -2,7 +2,7 @@ package tc.oc.pgm.platform.sportpaper.entities;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
-import tc.oc.pgm.util.nms.packets.BlockEntity;
+import tc.oc.pgm.util.nms.entities.BlockEntity;
 
 public record FallingBlock(Entity entity) implements BlockEntity {
     @Override

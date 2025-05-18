@@ -6,7 +6,7 @@ import org.bukkit.entity.Entity;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import tc.oc.pgm.util.nms.packets.BlockEntity;
+import tc.oc.pgm.util.nms.entities.BlockEntity;
 
 public record DisplayEntity(Entity entity) implements BlockEntity {
     @Override
