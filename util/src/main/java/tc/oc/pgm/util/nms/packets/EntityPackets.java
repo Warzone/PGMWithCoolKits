@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import tc.oc.pgm.util.StringUtils;
 import tc.oc.pgm.util.nms.EnumPlayerInfoAction;
 import tc.oc.pgm.util.material.BlockMaterialData;
+import tc.oc.pgm.util.nms.entities.BlockEntity;
 
 public interface EntityPackets {
 

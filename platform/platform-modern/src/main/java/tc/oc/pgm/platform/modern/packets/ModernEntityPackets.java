@@ -17,7 +17,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -28,13 +27,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import tc.oc.pgm.platform.modern.entities.DisplayEntity;
 import tc.oc.pgm.util.material.BlockMaterialData;
-import tc.oc.pgm.util.nms.packets.BlockEntity;
+import tc.oc.pgm.util.nms.entities.BlockEntity;
 import tc.oc.pgm.util.nms.packets.EntityPackets;
 import tc.oc.pgm.util.nms.packets.Packet;
 import tc.oc.pgm.util.platform.Supports;
-
-import java.util.List;
-import java.util.UUID;
 
 import static net.minecraft.world.entity.Entity.FLAG_INVISIBLE;
 import static tc.oc.pgm.util.platform.Supports.Variant.PAPER;

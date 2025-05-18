@@ -1,4 +1,4 @@
-package tc.oc.pgm.util.nms.packets;
+package tc.oc.pgm.util.nms.entities;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;

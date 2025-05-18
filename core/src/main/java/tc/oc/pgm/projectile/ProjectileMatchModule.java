@@ -8,7 +8,9 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 import org.bukkit.Location;
@@ -57,9 +59,7 @@ import tc.oc.pgm.projectile.path.ProjectilePath;
 import tc.oc.pgm.util.bukkit.MetadataUtils;
 import tc.oc.pgm.util.inventory.InventoryUtils;
 import tc.oc.pgm.util.nms.NMSHacks;
-import tc.oc.pgm.util.nms.packets.BlockEntity;
-import tc.oc.pgm.util.nms.packets.FakeEntity;
-import tc.oc.pgm.util.nms.packets.Packet;
+import tc.oc.pgm.util.nms.entities.BlockEntity;
 
 @ListenerScope(MatchScope.RUNNING)
 public class ProjectileMatchModule implements MatchModule, Listener {
@@ -101,10 +101,12 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 
       if (this.isCooldownActive(player, projectileDefinition)) return;
 
-      boolean realProjectile = false;
+      var projType = projectileDefinition.projectile;
+      boolean realProjectile = projType instanceof ProjectileDefinition.ProjectileEntity.RealEntity re
+              && Projectile.class.isAssignableFrom(re.entityType());
       if (projectileDefinition.projectile instanceof ProjectileDefinition.ProjectileEntity.RealEntity) {
         realProjectile = Projectile.class.isAssignableFrom(
-            ((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType
+            ((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType()
         );
       }
       Vector velocity =
@@ -116,7 +118,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
         launchingDefinition.set(projectileDefinition);
         if (realProjectile) {
           projectile = player.launchProjectile(
-            (((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType)
+            (((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType())
               .asSubclass(Projectile.class),
               velocity
           );
@@ -125,20 +127,20 @@ public class ProjectileMatchModule implements MatchModule, Listener {
           }
         } else {
           if ((projectileDefinition.projectile instanceof ProjectileDefinition.ProjectileEntity.RealEntity) &&
-                  FallingBlock.class.isAssignableFrom((((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType))) {
+                  FallingBlock.class.isAssignableFrom((((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType()))) {
             projectile =
                 projectileDefinition.blockMaterial.spawnFallingBlock(player.getEyeLocation());
           } else {
             Location loc = player.getEyeLocation();
-            if ((projectileDefinition.projectile instanceof ProjectileDefinition.ProjectileEntity.AbstractEntity) &&
-                    ((ProjectileDefinition.ProjectileEntity.AbstractEntity) projectileDefinition.projectile).entityType == ProjectileDefinition.ProjectileEntity.AbstractEntityType.BLOCK) {
+            if ((projectileDefinition.projectile instanceof ProjectileDefinition.ProjectileEntity.CustomEntity ce) &&
+                    ce.entityType() == ProjectileDefinition.ProjectileEntity.CustomEntityType.BLOCK) {
               loc.setPitch(0);
               loc.setYaw(0);
               blockEntity = ENTITIES.spawnBlockEntity(loc, projectileDefinition.blockMaterial);
               projectile = blockEntity.entity();
-            } else if (projectileDefinition.projectile instanceof ProjectileDefinition.ProjectileEntity.RealEntity) {
+            } else if (projectileDefinition.projectile instanceof ProjectileDefinition.ProjectileEntity.RealEntity re) {
               projectile =
-                      player.getWorld().spawn(loc, ((ProjectileDefinition.ProjectileEntity.RealEntity) projectileDefinition.projectile).entityType);
+                      player.getWorld().spawn(loc, re.entityType());
             }
           }
           projectile.setVelocity(velocity);
@@ -261,9 +263,9 @@ public class ProjectileMatchModule implements MatchModule, Listener {
   }
 
   private static void runFixedTimesAtPeriod(
-        final ScheduledExecutorService scheduledExecutorService, final BooleanSupplier runnable,
-        final long periodTicks, final long upperBoundMillis,
-        final Runnable finishHandler
+    final ScheduledExecutorService scheduledExecutorService, final BooleanSupplier runnable,
+    final long periodTicks, final long upperBoundMillis,
+    final Runnable finishHandler
   ) {
     final ScheduledFuture<?>[] ref = new ScheduledFuture[2];
     final ScheduledFuture<?> mainTask = scheduledExecutorService.scheduleAtFixedRate(

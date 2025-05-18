@@ -1,18 +1,9 @@
 package tc.oc.pgm.projectile;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.time.Duration;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.FallingBlock;
 import org.bukkit.potion.PotionEffect;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -25,10 +16,18 @@ import tc.oc.pgm.filters.FilterModule;
 import tc.oc.pgm.filters.parse.FilterParser;
 import tc.oc.pgm.kits.KitParser;
 import tc.oc.pgm.util.material.BlockMaterialData;
-import tc.oc.pgm.util.nms.NMSHacks;
 import tc.oc.pgm.util.xml.InvalidXMLException;
 import tc.oc.pgm.util.xml.Node;
+import tc.oc.pgm.util.xml.XMLFluentParser;
 import tc.oc.pgm.util.xml.XMLUtils;
+
+import java.time.Duration;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.logging.Logger;
 
 public class ProjectileModule implements MapModule<ProjectileMatchModule> {
   private final ImmutableSet<ProjectileDefinition> projectileDefinitions;
@@ -65,9 +64,8 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
             Node.fromChildOrAttr(projectileElement, "velocity"), Double.class, 1.0);
         ClickAction clickAction = XMLUtils.parseEnum(
             Node.fromAttr(projectileElement, "click"), ClickAction.class, ClickAction.BOTH);
-        ProjectileDefinition.ProjectileEntity entity =
-                parseProjectileEntity(projectileElement, "projectile", Arrow.class);
-        BlockMaterialData blockMaterial = acceptsBlockMaterial(entity)
+        ProjectileDefinition.ProjectileEntity entity = parseProjectileEntity(projectileElement, factory.getParser());
+        BlockMaterialData blockMaterial = entity.acceptsBlockMaterial()
             ? XMLUtils.parseBlockMaterialData(Node.fromAttr(projectileElement, "material"))
             : null;
         Float power = XMLUtils.parseNumber(
@@ -79,9 +77,6 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
         boolean throwable =
             XMLUtils.parseBoolean(projectileElement.getAttribute("throwable"), true);
         boolean precise = XMLUtils.parseBoolean(projectileElement.getAttribute("precise"), true);
-        float scale = XMLUtils.parseNumber(Node.fromChildOrAttr(projectileElement, "scale"), Float.class, 1.0f);
-        boolean solidBlockCollision = XMLUtils.parseBoolean(projectileElement.getAttribute("solid-block-collision"), true);
-        Duration maxTravelTime = XMLUtils.parseDuration(projectileElement.getAttribute("max-travel-time"), Duration.ofSeconds(1));
 
         ProjectileDefinition projectileDefinition = new ProjectileDefinition(
             id,
@@ -96,10 +91,8 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
             coolDown,
             throwable,
             precise,
-            blockMaterial,
-            scale,
-            solidBlockCollision,
-            maxTravelTime);
+            blockMaterial
+        );
 
         factory.getFeatures().addFeature(projectileElement, projectileDefinition);
         projectiles.add(projectileDefinition);
@@ -108,41 +101,25 @@ public class ProjectileModule implements MapModule<ProjectileMatchModule> {
       return projectiles.isEmpty() ? null : new ProjectileModule(ImmutableSet.copyOf(projectiles));
     }
 
-    private static final Map<String, ProjectileDefinition.ProjectileEntity.AbstractEntity> ABSTRACT_ENTITY_MAP =
-        ImmutableMap.of(
-          "block", new ProjectileDefinition.ProjectileEntity.AbstractEntity(
-                  ProjectileDefinition.ProjectileEntity.AbstractEntityType.BLOCK
-              )
-        );
-
     private static ProjectileDefinition.ProjectileEntity parseProjectileEntity(
-      final Element element,
-      final String attributeName,
-      final Class<? extends Entity> def
+      final Element el, final XMLFluentParser parser
     ) throws InvalidXMLException {
-      final Node node = Node.fromAttr(element, attributeName);
+      final String attributeName = "projectile";
+      final Class<? extends Entity> def = Arrow.class;
+      final Node node = Node.fromAttr(el, attributeName);
       if (node == null) {
         return new ProjectileDefinition.ProjectileEntity.RealEntity(def);
       }
       final String entityText = node.getValue();
-      if (!entityText.matches("[a-zA-Z0-9_]+")) {
-        throw new InvalidXMLException("Invalid entity type '" + entityText + "'", node);
-      }
-      if (ABSTRACT_ENTITY_MAP.containsKey(entityText.toLowerCase())) {
-        return ABSTRACT_ENTITY_MAP.get(entityText.toLowerCase());
-      }
-      return new ProjectileDefinition.ProjectileEntity.RealEntity(XMLUtils.parseEntityTypeAttribute(element, attributeName, def));
-    }
-
-    private static boolean acceptsBlockMaterial(final ProjectileDefinition.ProjectileEntity entity) {
-      if (entity instanceof ProjectileDefinition.ProjectileEntity.RealEntity) {
-        final Class<? extends Entity> cls = ((ProjectileDefinition.ProjectileEntity.RealEntity) entity).entityType;
-        return cls.isAssignableFrom(FallingBlock.class) || NMSHacks.NMS_HACKS.isBlockDisplayEntity(cls);
-      } else if (entity instanceof ProjectileDefinition.ProjectileEntity.AbstractEntity) {
-        return ((ProjectileDefinition.ProjectileEntity.AbstractEntity) entity).entityType ==
-                ProjectileDefinition.ProjectileEntity.AbstractEntityType.BLOCK;
-      }
-      return false;
+      return switch (entityText.toLowerCase(Locale.ROOT)) {
+        case "block" -> new ProjectileDefinition.ProjectileEntity.CustomEntity(
+            ProjectileDefinition.ProjectileEntity.CustomEntityType.BLOCK,
+            parser.parseFloat(el, "size").optional(1.0f),
+            parser.parseBool(el, "solid-block-collision").orTrue(),
+            parser.duration(el, "max-travel-time").optional(Duration.ofSeconds(1))
+        );
+        default -> new ProjectileDefinition.ProjectileEntity.RealEntity(XMLUtils.parseEntityType(el));
+      };
     }
   }
 }
