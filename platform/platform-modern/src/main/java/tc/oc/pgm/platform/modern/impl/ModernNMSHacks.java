@@ -12,12 +12,14 @@ import io.papermc.paper.world.PaperWorldLoader;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.Objects;
 import net.kyori.adventure.text.Component;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -32,11 +34,13 @@ import net.minecraft.server.TickTask;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -47,13 +51,17 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import net.minecraft.world.level.validation.ContentValidationException;
+import net.minecraft.world.phys.AABB;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Nameable;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftChunk;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -76,7 +84,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
+import org.bukkit.util.VoxelShape;
+
 import tc.oc.pgm.api.PGM;
 import tc.oc.pgm.platform.modern.PgmBootstrap;
 import tc.oc.pgm.platform.modern.material.ModernBlockMaterialData;
@@ -449,5 +460,68 @@ public class ModernNMSHacks implements NMSHacks {
   @Override
   public int allocateEntityId() {
     return Bukkit.getUnsafe().nextEntityId();
+  }
+
+  @Override
+  public boolean collidesWithBlock(Location center, double halfSize, Vector delta) {
+    World world = center.getWorld();
+
+    BoundingBox probeAABB = new BoundingBox(
+      center.getX() - halfSize + Math.min(0, delta.getX()),
+      center.getY() - halfSize + Math.min(0, delta.getY()),
+      center.getZ() - halfSize + Math.min(0, delta.getZ()),
+
+      center.getX() + halfSize + Math.max(0, delta.getX()),
+      center.getY() + halfSize + Math.max(0, delta.getY()),
+      center.getZ() + halfSize + Math.max(0, delta.getZ())
+    );
+
+    int minX = Mth.floor(probeAABB.getMinX());
+    int maxX = Mth.floor(probeAABB.getMaxX() - 1.0E-7);
+
+    int minY = Mth.floor(probeAABB.getMinY());
+    int maxY = Mth.floor(probeAABB.getMaxY() - 1.0E-7);
+
+    int minZ = Mth.floor(probeAABB.getMinZ());
+    int maxZ = Mth.floor(probeAABB.getMaxZ() - 1.0E-7);
+
+    for (int x = minX; x <= maxX; x++) {
+      for (int y = minY; y <= maxY; y++) {
+        for (int z = minZ; z <= maxZ; z++) {
+          Block block = world.getBlockAt(x, y, z);
+          
+          VoxelShape shape = block.getCollisionShape();
+          Collection<BoundingBox> boxes =  shape.getBoundingBoxes();
+          if (boxes.isEmpty()) continue;
+          
+          for (BoundingBox box : boxes) {
+            if (probeAABB.overlaps(box.clone().shift(block.getX(), block.getY(), block.getZ()))) {
+              System.out.println("=== COLLISION DETECTED ===");
+              System.out.println("Block: " + block.getType()
+                  + " @ (" + block.getX() + ", " + block.getY() + ", " + block.getZ() + ")");
+
+              System.out.println("Probe AABB:");
+              System.out.println("  " + probeAABB);
+
+              int i = 0;
+              for (BoundingBox localBox : shape.getBoundingBoxes()) {
+                BoundingBox worldBox = localBox.clone().shift(
+                    block.getX(), block.getY(), block.getZ()
+                );
+
+                System.out.println("Box #" + i++);
+                System.out.println("  Local: " + localBox);
+                System.out.println("  World: " + worldBox);
+              }
+
+              System.out.println("==========================");
+              return true;
+            }
+          }
+        }
+      }
+    }
+
+    return false;
   }
 }

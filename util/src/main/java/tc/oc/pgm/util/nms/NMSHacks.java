@@ -3,6 +3,7 @@ package tc.oc.pgm.util.nms;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -57,4 +58,6 @@ public interface NMSHacks {
   int getMaxWorldSize(World world);
 
   int allocateEntityId();
+
+  boolean collidesWithBlock(Location center, double halfSize, Vector delta);
 }

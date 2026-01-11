@@ -8,8 +8,10 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Explosive;
@@ -316,10 +318,9 @@ public class ProjectileMatchModule implements MatchModule, Listener {
     private final ProjectileDefinition.BlockEntityType ce;
     private final Location currentLocation;
     private final Vector increment;
-    private final Vector substep;
-    private final int substeps;
     private final Future<?> runner;
     private int remainingTime;
+    private boolean collided = false;
 
     public BlockRunner(
         ProjectileDefinition definition,
@@ -336,8 +337,6 @@ public class ProjectileMatchModule implements MatchModule, Listener {
 
       var normalizedDirection = currentLocation.getDirection().normalize();
       this.increment = normalizedDirection.multiply(definition.velocity);
-      this.substeps = Math.max(1, (int) (definition.velocity / ce.size()));
-      this.substep = increment.clone().divide(new Vector(substeps, substeps, substeps));
 
       this.remainingTime = (int) TimeUtils.toTicks(ce.maxTravelTime());
       this.runner = match
@@ -346,16 +345,13 @@ public class ProjectileMatchModule implements MatchModule, Listener {
     }
 
     public void tick() {
-      if (remainingTime-- <= 0) {
+      if (remainingTime-- <= 0 || collided) {
         cancel();
         return;
       }
       if (definition.damage != null || ce.solidBlockCollision()) {
-        Location substepLoc = currentLocation.clone();
-        for (int i = substeps; i > 0; i--) {
-          substepLoc.add(substep);
-          if (!blockDisplayCollision(substepLoc)) continue;
-          cancel();
+        if (blockDisplayCollision(currentLocation)) {
+          collided = true;
           return;
         }
       }
@@ -370,37 +366,64 @@ public class ProjectileMatchModule implements MatchModule, Listener {
     }
 
     private boolean blockDisplayCollision(Location location) {
-      double radius = 0.5 * ce.size();
+      double halfSize = 0.5 * ce.size();
 
-      if (definition.damage != null) {
-        for (Player victim : location.getNearbyPlayers(radius)) {
-          var mpVictim = match.getPlayer(victim);
-          if (MatchPlayers.canInteract(mpVictim) && mpVictim.getParty() != shooterParty) {
-            victim.damage(definition.damage, player);
-            return true;
-          }
-        }
+      if (definition.damage != null && collidesWithPlayer(location, halfSize, increment)) {
+        return true;
       }
-      if (ce.solidBlockCollision()) {
-        int x1 = (int) Math.floor(location.getX() - radius);
-        int y1 = (int) Math.floor(location.getY() - radius);
-        int z1 = (int) Math.floor(location.getZ() - radius);
+      if (ce.solidBlockCollision() && NMSHacks.NMS_HACKS.collidesWithBlock(currentLocation, halfSize, increment)) {
+        return true;
+      }
 
-        int x2 = (int) Math.floor(location.getX() + radius);
-        int y2 = (int) Math.floor(location.getY() + radius);
-        int z2 = (int) Math.floor(location.getZ() + radius);
+      return false;
+    }
 
-        Location loc = location.clone();
+    private boolean collidesWithPlayer(Location center, double halfSize, Vector delta) {
+      double startX = center.getX() - halfSize;
+      double startY = center.getY() - halfSize;
+      double startZ = center.getZ() - halfSize;
 
-        for (int x = x1; x <= x2; ++x) {
-          loc.setX(x);
-          for (int y = y1; y <= y2; ++y) {
-            loc.setY(y);
-            for (int z = z1; z <= z2; ++z) {
-              loc.setZ(z);
-              if (loc.getBlock().getType().isSolid()) return true;
-            }
-          }
+      double endX = center.getX() + halfSize + delta.getX();
+      double endY = center.getY() + halfSize + delta.getY();
+      double endZ = center.getZ() + halfSize + delta.getZ();
+
+      double minX = Math.min(startX, endX);
+      double minY = Math.min(startY, endY);
+      double minZ = Math.min(startZ, endZ);
+
+      double maxX = Math.max(startX, endX);
+      double maxY = Math.max(startY, endY);
+      double maxZ = Math.max(startZ, endZ);
+
+      World world = center.getWorld();
+      double radius = halfSize + delta.length();
+
+      for (Player victim : world.getPlayers()) {
+        var mpVictim = match.getPlayer(victim);
+        if (!MatchPlayers.canInteract(mpVictim) || mpVictim.getParty() == shooterParty) continue;
+
+        if (victim.getLocation().distanceSquared(center) > radius * radius) continue;
+
+        // approximate player bounding box (0.6x1.8)
+        double px = victim.getLocation().getX();
+        double py = victim.getLocation().getY();
+        double pz = victim.getLocation().getZ();
+        double pw = 0.3; // half-width
+        double ph = 0.9; // half-height
+
+        double playerMinX = px - pw;
+        double playerMaxX = px + pw;
+        double playerMinY = py;
+        double playerMaxY = py + ph*2;
+        double playerMinZ = pz - pw;
+        double playerMaxZ = pz + pw;
+
+        if (maxX >= playerMinX && minX <= playerMaxX &&
+          maxY >= playerMinY && minY <= playerMaxY &&
+          maxZ >= playerMinZ && minZ <= playerMaxZ) {
+
+          victim.damage(definition.damage, player);
+          return true;
         }
       }
 

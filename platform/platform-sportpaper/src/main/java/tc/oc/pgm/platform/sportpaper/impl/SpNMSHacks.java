@@ -8,6 +8,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import net.minecraft.server.v1_8_R3.AxisAlignedBB;
 import net.minecraft.server.v1_8_R3.ChunkSection;
 import net.minecraft.server.v1_8_R3.EntityArrow;
 import net.minecraft.server.v1_8_R3.EntityFireball;
@@ -224,5 +226,29 @@ public class SpNMSHacks implements NMSHacks {
   @Override
   public int allocateEntityId() {
     return Bukkit.allocateEntityId();
+  }
+
+  @Override
+  public boolean collidesWithBlock(Location center, double halfSize, Vector delta) {
+    System.out.println("WRONG ONE");
+    AxisAlignedBB box = new AxisAlignedBB(
+        center.getX() - halfSize,
+        center.getY() - halfSize,
+        center.getZ() - halfSize,
+        center.getX() + halfSize,
+        center.getY() + halfSize,
+        center.getZ() + halfSize
+    );
+
+    AxisAlignedBB swept = box.a(
+        delta.getX(),
+        delta.getY(),
+        delta.getZ()
+    );
+
+    CraftWorld craftWorld = (CraftWorld) center.getWorld();
+    WorldServer world = craftWorld.getHandle();
+
+    return world.a(swept, (net.minecraft.server.v1_8_R3.Entity) null);
   }
 }
