@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
