@@ -336,6 +336,7 @@ public class ProjectileMatchModule implements MatchModule, Listener {
       var normalizedDirection = currentLocation.getDirection().normalize();
       this.currentLocation.setPitch(0);
       this.currentLocation.setYaw(0);
+
       this.increment = normalizedDirection.multiply(definition.velocity);
 
       this.remainingTime = (int) TimeUtils.toTicks(ce.maxTravelTime());
