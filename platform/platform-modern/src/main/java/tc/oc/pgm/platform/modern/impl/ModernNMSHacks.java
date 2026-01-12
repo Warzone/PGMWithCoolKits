@@ -496,25 +496,6 @@ public class ModernNMSHacks implements NMSHacks {
           
           for (BoundingBox box : boxes) {
             if (probeAABB.overlaps(box.clone().shift(block.getX(), block.getY(), block.getZ()))) {
-              System.out.println("=== COLLISION DETECTED ===");
-              System.out.println("Block: " + block.getType()
-                  + " @ (" + block.getX() + ", " + block.getY() + ", " + block.getZ() + ")");
-
-              System.out.println("Probe AABB:");
-              System.out.println("  " + probeAABB);
-
-              int i = 0;
-              for (BoundingBox localBox : shape.getBoundingBoxes()) {
-                BoundingBox worldBox = localBox.clone().shift(
-                    block.getX(), block.getY(), block.getZ()
-                );
-
-                System.out.println("Box #" + i++);
-                System.out.println("  Local: " + localBox);
-                System.out.println("  World: " + worldBox);
-              }
-
-              System.out.println("==========================");
               return true;
             }
           }

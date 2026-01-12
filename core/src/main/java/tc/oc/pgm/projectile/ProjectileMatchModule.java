@@ -379,30 +379,18 @@ public class ProjectileMatchModule implements MatchModule, Listener {
     }
 
     private boolean collidesWithPlayer(Location center, double halfSize, Vector delta) {
-      double startX = center.getX() - halfSize;
-      double startY = center.getY() - halfSize;
-      double startZ = center.getZ() - halfSize;
+      double minX = center.getX() - halfSize + Math.min(0.0, delta.getX());
+      double minY = center.getY() - halfSize + Math.min(0.0, delta.getY());
+      double minZ = center.getZ() - halfSize + Math.min(0.0, delta.getZ());
 
-      double endX = center.getX() + halfSize + delta.getX();
-      double endY = center.getY() + halfSize + delta.getY();
-      double endZ = center.getZ() + halfSize + delta.getZ();
-
-      double minX = Math.min(startX, endX);
-      double minY = Math.min(startY, endY);
-      double minZ = Math.min(startZ, endZ);
-
-      double maxX = Math.max(startX, endX);
-      double maxY = Math.max(startY, endY);
-      double maxZ = Math.max(startZ, endZ);
+      double maxX = center.getX() + halfSize + Math.max(0.0, delta.getX());
+      double maxY = center.getY() + halfSize + Math.max(0.0, delta.getY());
+      double maxZ = center.getZ() + halfSize + Math.max(0.0, delta.getZ());
 
       World world = center.getWorld();
-      double radius = halfSize + delta.length();
-
       for (Player victim : world.getPlayers()) {
         var mpVictim = match.getPlayer(victim);
         if (!MatchPlayers.canInteract(mpVictim) || mpVictim.getParty() == shooterParty) continue;
-
-        if (victim.getLocation().distanceSquared(center) > radius * radius) continue;
 
         // approximate player bounding box (0.6x1.8)
         double px = victim.getLocation().getX();
