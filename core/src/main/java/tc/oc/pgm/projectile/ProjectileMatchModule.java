@@ -333,9 +333,10 @@ public class ProjectileMatchModule implements MatchModule, Listener {
       this.shooterParty = Objects.requireNonNull(match.getPlayer(player)).getParty();
       this.ce = (ProjectileDefinition.BlockEntityType) definition.projectile;
 
-      this.currentLocation = spawnLocation;
-
+      this.currentLocation = spawnLocation.clone();
       var normalizedDirection = currentLocation.getDirection().normalize();
+      this.currentLocation.setPitch(0);
+      this.currentLocation.setYaw(0);
       this.increment = normalizedDirection.multiply(definition.velocity);
 
       this.remainingTime = (int) TimeUtils.toTicks(ce.maxTravelTime());
